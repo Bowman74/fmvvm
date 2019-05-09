@@ -66,43 +66,38 @@ void main() {
 
 class _TestViewModel extends BindableBase {
   
-  static PropertyInfo _stringTestProperty = PropertyInfo('stringTest', String);
+  static PropertyInfo stringTestProperty = PropertyInfo('stringTest', String);
 
-  String get stringTest => getValue(_stringTestProperty);
+  String get stringTest => getValue(stringTestProperty);
   set stringTest(String value) => {
-      setValue(_stringTestProperty, value),
-      elementChanged('stringTest')
+      setValue(stringTestProperty, value),
     };
 
-  static PropertyInfo _intTestProperty = PropertyInfo('intTest', int);
+  static PropertyInfo intTestProperty = PropertyInfo('intTest', int);
 
-  int get intTest => getValue(_intTestProperty);
+  int get intTest => getValue(intTestProperty);
   set intTest(int value) => {
-      setValue(_intTestProperty, value),
-      elementChanged('intTest')
+      setValue(intTestProperty, value),
     };
 
-  static PropertyInfo _doubleTestProperty = PropertyInfo('doubleTest', double);
+  static PropertyInfo doubleTestProperty = PropertyInfo('doubleTest', double);
 
-  double get doubleTest => getValue(_doubleTestProperty);
+  double get doubleTest => getValue(doubleTestProperty);
   set doubleTest(double value) => {
-      setValue(_doubleTestProperty, value),
-      elementChanged('doubleTest')
+      setValue(doubleTestProperty, value),
     };
 
-  static PropertyInfo _dateTimeTestProperty = PropertyInfo('dateTimeTest', DateTime);
+  static PropertyInfo dateTimeTestProperty = PropertyInfo('dateTimeTest', DateTime);
 
-  DateTime get dateTimeTest => getValue(_dateTimeTestProperty);
+  DateTime get dateTimeTest => getValue(dateTimeTestProperty);
   set dateTimeTest(DateTime value) => {
-      setValue(_dateTimeTestProperty, value),
-      elementChanged('dateTimeTest')
+      setValue(dateTimeTestProperty, value),
     };
 
-  static PropertyInfo _referenceTypeTestProperty = PropertyInfo('referenceTypeTest', _TestViewModel);
+  static PropertyInfo referenceTypeTestProperty = PropertyInfo('referenceTypeTest', _TestViewModel);
 
-  _TestViewModel get referenceTypeTest => getValue(_referenceTypeTestProperty);
+  _TestViewModel get referenceTypeTest => getValue(referenceTypeTestProperty);
   set referenceTypeTest(_TestViewModel value) => {
-      setValue(_referenceTypeTestProperty, value),
-      elementChanged('referenceTypeTest')
+      setValue(referenceTypeTestProperty, value),
     };
 }

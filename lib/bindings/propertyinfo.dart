@@ -4,6 +4,7 @@ class PropertyInfo {
   String _name;
   Object _defaultValue;
   Type _type;
+  int _id = -1;
 
   PropertyInfo(String name, Type type, [Object defaultValue]) {
     _name = name;
@@ -27,7 +28,8 @@ class PropertyInfo {
 
   Object get defaultValue => _defaultValue;
 
-  final String id = Uuid().v4();
+  int get id => _id;
+  _setIdentifier(int value) => _id = value;
 
   FieldData createFieldData() {
     return new FieldData(_name, id, _defaultValue);

@@ -11,8 +11,6 @@ dependencies:
     flutter:
         sdk: flutter
 
-    uuid: ^2.0.0
-
 dev_dependencies:
     flutter_test:
         sdk: flutter

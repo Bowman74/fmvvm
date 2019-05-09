@@ -2,15 +2,15 @@ part of fmvvm_bindings;
 
 class FieldData<T> {
   String _name;
-  String _id;
+  int _id;
   T value;
 
-  FieldData(String name, String id, Object startingValue) {
+  FieldData(String name, int id, Object startingValue) {
     _name = name;
     _id = id;
     value = startingValue;
   }
 
   String get name => _name;
-  String get id => _id;
+  int get id => _id;
 }

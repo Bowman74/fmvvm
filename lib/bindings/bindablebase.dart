@@ -5,14 +5,18 @@ abstract class BindableBase implements NotifyChanges {
   FieldManager _fieldManager = FieldManager();
 
   void setValue(PropertyInfo propertyInfo, Object value) {
-    _fieldManager.setValue(propertyInfo, value);
+    if (_fieldManager.getValue(propertyInfo) != value) {
+      _fieldManager.setValue(propertyInfo, value);
+
+      elementChanged(propertyInfo.name);
+    }
   }
 
   Object getValue(PropertyInfo propertyInfo) {
     return _fieldManager.getValue(propertyInfo);
   }
 
-    elementChanged(String propertyName) {
+  elementChanged(String propertyName) {
     _elementChangedController.add(propertyName);
   }
   

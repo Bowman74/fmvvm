@@ -1,9 +1,9 @@
 part of fmvvm.bindings;
 
-class FieldData<T> implements fmvvm_interfaces.FieldData {
+/// Contains the data backing a PropertyInfo for an instance of a class.
+class FieldData<T> implements fmvvm_interfaces.FieldData<T> {
   String _name;
   int _id;
-  T value;
 
   FieldData(String name, int id, Object startingValue) {
     _name = name;
@@ -11,6 +11,14 @@ class FieldData<T> implements fmvvm_interfaces.FieldData {
     value = startingValue;
   }
 
+  /// The name of the property.
   String get name => _name;
+
+  /// An id for this FieldData within an instance of a class.
+  /// 
+  /// This field is normally used by the fmvvm framework.
   int get id => _id;
+
+  /// The current value of the property.
+  T value;
 }

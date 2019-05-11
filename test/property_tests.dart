@@ -71,7 +71,7 @@ class _TestViewModel extends BindableBase {
   String get stringTest => getValue(stringTestProperty);
   set stringTest(String value) => {
       setValue(stringTestProperty, value),
-    };
+  };
 
   static PropertyInfo intTestProperty = PropertyInfo('intTest', int);
 

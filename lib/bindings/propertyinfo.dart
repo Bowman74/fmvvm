@@ -6,9 +6,7 @@ class PropertyInfo {
   Type _type;
   int _id = -1;
 
-  PropertyInfo(String name, Type type, [Object defaultValue]) {
-    _name = name;
-    _type = type;
+  PropertyInfo(this._name, this._type, [Object defaultValue]) {
     if (defaultValue == null && _type == String) {
       _defaultValue = '';
     } else if (defaultValue == null && _type == int) {

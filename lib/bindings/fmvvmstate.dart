@@ -1,9 +1,15 @@
 part of fmvvm_bindings;
 
-abstract class FmvvmState<T extends StatefulWidget> extends State<T> {
-  final List<Binding> _sourceBindings = List<Binding>();
+abstract class FmvvmState<T extends StatefulWidget, V extends ViewModel> extends State<T>
+    with BindingManager
+    implements ViewModelHolder<V> {
+  FmvvmState(this._viewModel);
 
-  Binding createBinding(BindableBase source, PropertyInfo property,
+  V _viewModel;
+
+  V get viewModel => _viewModel;
+
+  Binding createBindingEx(BindableBase source, PropertyInfo property,
       {BindingDirection bindingDirection, ValueConverter valueConverter}) {
     var binding = Binding(source, property,
         bindingDirection: bindingDirection, valueConverter: valueConverter);
@@ -13,23 +19,21 @@ abstract class FmvvmState<T extends StatefulWidget> extends State<T> {
     return binding;
   }
 
-  Object getValue(Binding binding) {
-    Object returnValue;
-    if (binding.bindingDirection == BindingDirection.OneTime &&
-        !binding._originalValue is _OriginalValueNeverSet) {
-      returnValue = binding._originalValue;
-    } else if (binding.valueConverter == null) {
-      returnValue =
-          binding.source._fieldManager.getValue(binding.sourceProperty);
-    } else {
-      returnValue = binding.valueConverter.convert(binding.source,
-          binding.source._fieldManager.getValue(binding.sourceProperty));
+  void addBindingAndCreateListener(List<Binding> bindings, Binding binding) {
+    if (!bindings.any((b) => b.source == binding.source)) {
+      var subscription = binding.source.onChanged.listen((fieldName) {
+        if ((binding.bindingDirection == BindingDirection.OneWay ||
+                binding.bindingDirection == BindingDirection.TwoWay) &&
+            (fieldName == "" ||
+                bindings.any((b) =>
+                    b.sourceProperty.name == fieldName &&
+                    b.source == binding.source))) {
+          setState(() {});
+        }
+      });
+      _subscriptions.add(subscription);
     }
-
-    if (binding._originalValue is _OriginalValueNeverSet) {
-      binding._originalValue = returnValue;
-    }
-    return returnValue;
+    bindings.add(binding);
   }
 
   void setValue(Binding binding, Object value) {
@@ -43,23 +47,6 @@ abstract class FmvvmState<T extends StatefulWidget> extends State<T> {
     });
   }
 
-  void addBindingAndCreateListener(List<Binding> bindings, Binding binding) {
-    if (!bindings.any((b) => b.source == binding.source)) {
-      binding.source.onChanged.listen((fieldName) {
-        if ((binding.bindingDirection == BindingDirection.OneWay ||
-                binding.bindingDirection == BindingDirection.TwoWay) &&
-            (fieldName == "" ||
-                bindings.any((b) =>
-                    b.sourceProperty.name == fieldName &&
-                    b.source == binding.source))) {
-          setState(() {});
-        }
-      });
-    }
-
-    bindings.add(binding);
-  }
-
   Function getTargetValuedTextChanged(
       Binding binding, TextEditingController controller) {
     assert(binding.bindingDirection == BindingDirection.TwoWay);
@@ -69,5 +56,21 @@ abstract class FmvvmState<T extends StatefulWidget> extends State<T> {
   Function getOnChanged(Binding binding) {
     assert(binding.bindingDirection == BindingDirection.TwoWay);
     return (Object newValue) => {setValue(binding, newValue)};
+  }
+
+  void viewModelChanged() {
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Core.navigationService.currentContext = context;
+    return null;
+  }
+
+  @override
+  void dispose() {
+    _subscriptions?.forEach((StreamSubscription s) => {s.cancel()});
+    super.dispose();
   }
 }

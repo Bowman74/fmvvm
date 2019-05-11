@@ -1,10 +1,10 @@
 part of fmvvm_bindings;
 
 class Binding {
-  Binding(BindableBase source, PropertyInfo sourceProperty,
+  Binding(BindableBase source, PropertyInfo sourceProperty, 
       {BindingDirection bindingDirection,
       ValueConverter valueConverter}) {
-    _source = source;
+    this.source = source;
     _sourceProperty = sourceProperty;
 
     _bindingDirection = bindingDirection ?? BindingDirection.OneWay;
@@ -13,13 +13,11 @@ class Binding {
 
   BindingDirection _bindingDirection;
 
-  BindableBase _source;
-
   PropertyInfo _sourceProperty;
 
   ValueConverter _valueConverter;
 
-  BindableBase get source => _source;
+  BindableBase source;
 
   BindingDirection get bindingDirection => _bindingDirection;
 

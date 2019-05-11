@@ -1,5 +1,6 @@
 part of fmvvm;
 
+/// The default fmvvm dependency injection/IoC implementation.
 class FmvvmContainer implements ComponentResolver {
   FmvvmContainer() {
     if (_dependencyRegistrations == null) {
@@ -9,7 +10,7 @@ class FmvvmContainer implements ComponentResolver {
 
   static List<_DependencyRegistration> _dependencyRegistrations;
 
-  @override
+  /// Resolve a type registered with the contianer specified by [targetType].
   Object resolve(Type targetType) {
     if (!_dependencyRegistrations
         .any((r) => identical(r.typeRegistered, targetType))) {
@@ -22,63 +23,73 @@ class FmvvmContainer implements ComponentResolver {
         .singleWhere((r) => identical(r.typeRegistered, targetType));
 
     if (registration.registrationType ==
-        RegistrationType.instanceRegistration) {
+        _RegistrationType.instanceRegistration) {
       return registration.registeredInstance;
     } else {
       return registration.factoryMethod();
     }
   }
 
-  @override
+  /// Resolve a type registered with the contianer specified by a generic type.
   T resolveType<T>() {
     return resolve(Utilities.typeOf<T>());
   }
 
-  @override
+  /// Registers an [instance] of an object of the generic type.
+  /// 
+  /// All calls to resolve based on this type will always return the registered instance.
+  /// This in effect creates a singleton.
   void registerInstance<T>(T instance) {
     if (_dependencyRegistrations
         .any((r) => identical(r.typeRegistered, Utilities.typeOf<T>()))) {
       throw StateError("The same type cannot be registered twice");
     }
     _dependencyRegistrations.add(_DependencyRegistration(
-        RegistrationType.instanceRegistration, T,
+        _RegistrationType.instanceRegistration, T,
         registeredInstance: instance));
   }
 
-  @override
+  /// Registers a type that can be resolved.
+  /// 
+  /// The [typeCreationFunction] is a reference to a function that should create an
+  /// instance of this type.
   void registerType<T>([Function factoryMethod]) {
+    ArgumentError.checkNotNull(factoryMethod, "factoryMethod");
+    
     if (_dependencyRegistrations
         .any((r) => identical(r.typeRegistered, Utilities.typeOf<T>()))) {
       throw StateError("The same type cannot be registered twice");
     }
     _dependencyRegistrations.add(_DependencyRegistration(
-        RegistrationType.typeRegistration, Utilities.typeOf<T>(),
+        _RegistrationType.typeRegistration, Utilities.typeOf<T>(),
         factoryMethod: factoryMethod));
   }
 
-  @override
+  /// This method should be called when using dependency injection frameworks that require a 
+  /// completion function to be called after all registrations are complete.
   void completeRegistration() {
-    // does nothing in the default lightweight Fmvvm IoC implementation
+
   }
 
+  /// Removes all registrations from the dependency injection container.
   void resetRegistrations() {
     _dependencyRegistrations = List<_DependencyRegistration>();
   }
 }
-
+/// A object that contains information about resolving an dependency.
 class _DependencyRegistration {
   _DependencyRegistration(
-      RegistrationType registrationType, Type typeRegistered,
+      _RegistrationType registrationType, Type typeRegistered,
       {Object registeredInstance, Function factoryMethod}) {
     if (registrationType == null) {
       throw ArgumentError("registrationType");
     }
-    if (registrationType == RegistrationType.instanceRegistration &&
+    if (registrationType == _RegistrationType.instanceRegistration &&
         registeredInstance == null) {
       throw StateError(
           "The registered instance cannot be null when the registration type is an instance registration.");
     }
-    if (registrationType == RegistrationType.typeRegistration &&
+    if (registrationType == _RegistrationType.typeRegistration &&
         factoryMethod == null) {
       throw StateError(
           "The factory method cannot be null when the registration type is a type registration.");
@@ -89,18 +100,23 @@ class _DependencyRegistration {
     _factoryMethod = factoryMethod;
   }
 
-  RegistrationType _registrationType;
+  _RegistrationType _registrationType;
   Type _typeRegistered;
   Object _registeredInstance;
   Function _factoryMethod;
 
-  RegistrationType get registrationType => _registrationType;
+  /// The type of registration, always get the same instance or new instance per type.
+  _RegistrationType get registrationType => _registrationType;
 
+  /// The type of object to create.
   Type get typeRegistered => _typeRegistered;
 
+  /// A reference to the object for instance registration.
   Object get registeredInstance => _registeredInstance;
 
+  /// A function to create an instance of an object for type registrations.
   Function get factoryMethod => _factoryMethod;
 }
 
-enum RegistrationType { typeRegistration, instanceRegistration }
+/// Donites if a _DependencyRegistration is an instance or type registration.
+enum _RegistrationType { typeRegistration, instanceRegistration }

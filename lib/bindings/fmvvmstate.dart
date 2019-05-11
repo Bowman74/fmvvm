@@ -10,10 +10,10 @@ abstract class FmvvmState<T extends StatefulWidget, V extends fmvvm_interfaces.V
   /// Creates the FmvvmState object.
   /// 
   /// [_viewModel] is the view model to be used.
-  /// [_isNavigatable] should be true if this widget will be treated like a page instead of part
+  /// [_isNavigable] should be true if this widget will be treated like a page instead of part
   /// of a page.
   @mustCallSuper
-  FmvvmState(this._viewModel, this._isNavigatable);
+  FmvvmState(this._viewModel, this._isNavigable);
 
   final List<Binding> _sourceBindings = List<Binding>();
   final List<StreamSubscription> _subscriptions = List<StreamSubscription>();
@@ -24,7 +24,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends fmvvm_interfaces.V
   /// The class's viewmodel reference.
   V get viewModel => _viewModel;
 
-  final bool _isNavigatable;
+  final bool _isNavigable;
 
   /// Creates a new binding for the state.
   ///
@@ -133,7 +133,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends fmvvm_interfaces.V
   @override
   @mustCallSuper
   Widget build(BuildContext context) {
-    if (_isNavigatable) {
+    if (_isNavigable) {
       Core.componentResolver.resolveType<fmvvm_interfaces.NavigationService>().currentContext = context;
     }
     return null;

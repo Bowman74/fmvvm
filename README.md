@@ -273,7 +273,7 @@ class MyState extends FmvvmState<MyStatefulWidget, MyViewModel> {
 }
 ```
 
-Like the FmvvmStatlessWidget, the second parameter sent to the super class defines if this widget is navicable (like a page) or not (like a widget in a page). Pass true if it is navicable.
+Like the FmvvmStatlessWidget, the second parameter sent to the super class defines if this widget is navigable (like a page) or not (like a widget in a page). Pass true if it is navigable.
 
 #### Bindings on stateful widgets
 This is where things get more complex. With stateful widgets bindings can be bi-directional. That is to say, when values in the viewmodel change we want to update the widget and when values in the widget change we want to update the viewmodel.
@@ -473,8 +473,8 @@ So how does it tell what widget to use for that view? By default it used a namin
 
 In order for all this to work a couple of things need to be true.
 
-* The widget diplaying the viewmodel needs to have its isNavicable property set to true.
-* The widget that is displaying the viewmodel we are navigating to needs to have its isNavicable property set to true.
+* The widget diplaying the viewmodel needs to have its isNavigable property set to true.
+* The widget that is displaying the viewmodel we are navigating to needs to have its _isNavigable property set to true.
 * The viewmodel we are navigating to needs to be registered in the component resolver.
 * The viewmodel and associated route need to be named appropriately or another method of viewmodel resolution needs to be provided.
 

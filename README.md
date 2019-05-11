@@ -90,6 +90,8 @@ set someDateTime(DateTime value) => {
 
 Notice that the name given to the setter and getter is the same as what was used in the creation of the PropertyInfo. This is not required but the name given the PropertyInfo has to be unique for the class for data binding to work correctly.
 
+calling setValue will raise an event if the value did indeed change through the NotifyChanges interface. This is used by data binding.
+
 Read only or set only properties can be created by leaving off the setter or getter respectively.
 
 ### Adding commands
@@ -515,7 +517,7 @@ Navigating back is as simple as calling:
 NaivgationService.navigateBack();
 ```
 
-## putting it all together
+## Putting it all together
 Here is a sample app that puts together the concepts we have discussed.
 
 ```

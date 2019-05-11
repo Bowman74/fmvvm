@@ -158,4 +158,274 @@ var myClass = Core.ComponentResolver.resolve(MyClass);
 var myClass = Core.ComponentResolver.resolve<MyClass>();
 ```
 
-## Data Binding
+## Data binding
+Data binding creates a relationship between a class that inherits from BindableBase and a stateful or stateless widget. To be bound to a viewmodel the widget must derive from FmvvmStatefulWidget using a state object the derives from FmvvmState or from FmvvmStatelessWidget.
+
+The widgets can only be bound directly to viewmodel objects and any object that derives from BindableBase it may expose.
+
+### StatelessWidgets
+Stateless widgets cannot change, they can only get information out of a viewmodel and no changes are allowed.
+
+Creating a stateless widget should look like this:
+
+```
+class MyStatelessWidget extends FmvvmStatelessWidget<SomeViewModel> {
+  MyStatelessWidget(fmvvm_interfaces.ViewModel viewModel, {Key key})
+      : super(viewModel, true, key: key);
+}
+```
+
+__Notice that it is required than an instance of a class that implements viewmodel must be passed to the constructor.__
+__Notive that the second parameter passed to the super contructor defines if this widget is navacable. Pass true for something that is navigated to like a widget that is a page and false for a widget that would be part of a page, like a row in a list.__
+
+Now the build method can be overriden to create the widget interface and used values supplied by the view model.
+
+The getValueWithConversion method can be used to pull values out of the view model. To use this method pass it a reference to the view model and the value stored in the property that you want to use.
+
+```
+@override
+Widget build(BuildContext context) {
+  super.build(context);
+  return Scaffold(
+      appBar: AppBar(
+        title: Text('Current Count'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Counter Value:',
+            ),
+            Text(getValueWithConversion(viewModel, viewModel.counter)),
+            ],
+          ),
+        ));
+  }
+```
+
+__Calling the super.build(context); method is reluired for navigation to work correctly.__
+
+You can also set the value of the Text widget to the counter property in the view model, but then you would not be able to take advantage of value conversion. More on that later.
+
+```
+Text(viewModel.counter.toString())
+```
+
+### Stateful widgets
+Stateful widget should inherit from FmvvmStatefulWidget.
+
+```
+class MyStatefulWidget extends FmvvmStatefulWidget<MyViewModel> {
+  MyStatefulWidget(MyViewModel viewModel, {Key key, this.title})
+      : super(viewModel, key: key);
+}
+```
+
+Classes that inherit from FmvvmStatfulWidget should always use a State object that inherits from FmvvmState and pass the viewmodel to the state object.
+
+```
+@override
+MyState createState() => MyState(viewModel);
+```
+
+To create the State object we simply extend from FmvvmState.
+
+```
+class MyState extends FmvvmState<MyStatefulWidget, MyViewModel> {
+  MyState(MyViewModel viewModel) : super(viewModel, true);
+}
+```
+
+Like the FmvvmStatlessWidget, the second parameter sent to the super class defines if this widget is navicable (like a page) or not (like a widget in a page). Pass true if it is navicable.
+
+#### Bindings on stateful widgets
+This is where things get more complex. With stateful widgets bindings can be bi-directional. That is to say, when values in the viewmodel change we want to update the widget and when values in the widget change we want to update the viewmodel.
+
+Because many of the sub widgets do not have consistent change methods or are not persistent, binding is done a little differently than you may have experienced in other mvvm frameworks.
+
+Inside your State class, create a binding.
+
+```
+Binding _myBinding;
+```
+
+This creates a reference to a persistent binding object. Now we can create an instance of the binding, this is normally done in the initState method.
+
+```
+@override
+void initState() {
+  super.initState();
+
+  _myBinding = createBinding(
+      viewModel, MyViewModel.someProperty,
+      bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay);
+}
+```
+
+__Calls to the super class's initState method are required__
+
+Here we create a binding. It gets a reference to the view model and a reference to a static PropertyInfo object that has the information about the property we are bound to.
+
+We have also stated that the binding direction is two way. This will allow changes in the viewmodel's property or the entire viewmodel to call setState() and redraw the widget.
+
+We can also set the binding direction to one time. If set to one time the binding will always return the value that it was when first queried, regardless of any changes that may have happened to the value stored in the viewmodel.
+
+In the build method we can use our binding to give values to some of the widgets are are using.
+
+```
+@override
+Widget build(BuildContext context) {
+  super.build(context);
+
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Counter'),
+    ),
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text('You have pushed the button this many times:'),
+          Text(getValue(_myBinding)),
+          ],
+      ),
+    )
+  );
+}
+```
+In this case we are setting the value of the Text widget to the return value of the getValue method. This method takes a reference to a binding object we created. If it returns the current value for the property stored in the viewmodel, or the first value returned, depends on the binding direction parameter with the binding was created.
+
+That handles getting value changes from the viewmodel to the widget, how about values that change in the widget back to the viewmodel. That gets a little more complicated. Let's look at a Switch.
+
+```
+Switch(
+  value: getValue(_boolBinding1) as bool,
+  onChanged: getOnChanged(_boolBinding1),
+),
+```
+
+Here the value property is set the same as it was for the Text widget, using the getValue method. The getvalue method is for values coming back from the viewmodel to the widget. The onChanged event is for values from the Widget going to the viewModel. Here we use a method called getOnChanged that receives a reference to the binding and sets the value on the viewmodel based on the new value in the widget. If you don't want and changed values in the widget being sent back to the viewmodel, simply don't set the OnChanged even to call the getOnChanged() method.
+
+But what about things that use a controller like a TextField?
+
+To do this we first create the controller in the State object.
+
+```
+TextEditingController _myController;
+```
+
+Then create an instance of it in the initState method and add a listener to the binding.
+
+```
+@override
+void initState() {
+  super.initState();
+
+  _myController = TextEditingController();
+  _myBinding = createBinding(
+      viewModel, MyViewModel.someProperty,
+      bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay);
+  _myController.addListener(getTargetValuedTextChanged(_myBinding, _myController));
+  }
+```
+
+Then in the build method:
+
+```
+@override
+Widget build(BuildContext context) {
+  super.build(context);
+  myController.text = getValue(_myBinding);
+
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Counter'),
+    ),
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text('You have pushed the button this many times:'),
+          TextField(
+            style: Theme.of(context).textTheme.display1,
+            controller: controller,
+          ),
+          ],
+      ),
+    )
+  );
+}
+```
+
+Another posisbility for the TextField would be to leave the addListener off in the initState method and instead in the build method use the onChanged event of the TextField widget.
+
+__In order to send widget values back to the viewmodel there needs to be a way, usually an event, that you can use to know the change occurred.__
+
+### Calling commands
+Commands are functions that you want to call on your viewmodel. In the viewmodels section we went over how a Command can be set up in a view model. Here is an example of calling that command from a FloatingActionButton widget in the build method.
+
+```
+floatingActionButton: FloatingActionButton(
+  onPressed: viewModel.incrementCounter.execute,
+  tooltip: 'Increment',
+  child: Icon(Icons.add),
+)
+```
+
+Commands can also take parameters. Here is an example using a FlatButton widget.
+
+```
+FlatButton(
+  child: Text('Navigate'),
+  onPressed: () {viewModel.navigate.execute(getValue(_someBinding));})
+```
+
+In this case the value from a binding would be passed as a parameter to the command.
+
+### Value conversion
+Many times the shape and type of information stored in your viewmodel may not be in the right format to be directly bound to a widget. Remember, the view model shouldn't know about any views that use it, or their capabilities or shape. So while a viewmodel wouldn't have a property to say if something like a button was enabled, it might have a isValid property and then create a binding to enable/disable a save button based on if the viewmodel's data is valid to save.
+
+What does this have to do with value conversion? Simply that it is expected that the value in a viewmodel will not always be in a format needed by the widget. Take the following simple example, inside the viewmodel we have a counter property that is implemented as an int but we want to bind that to a Text widget that is expecting a string.
+
+First we create a class that can convert back and forth:
+
+```
+class NumberValueConverter implements fmvvm_interfaces.ValueConverter {
+  Object convert(Object source, Object value) {
+    return value.toString();
+  }
+
+  Object convertBack(Object source, Object value) {
+    return int.tryParse(value) ?? 0;
+  }
+}
+```
+
+The convert function is used by a binding to go from the value in the viewmodel to the widget. The convert back method is information coming from the widget back to the view model. It this were used on a binding to a TextField and the user entered a 'g' charater, the try parse will fail and a 0 sent to the viewmodel.
+
+Value converters are sent to bindings when they are created and used automatically after that on calls to getValue and setValue.
+
+```
+@override
+void initState() {
+  super.initState();
+
+  _myBinding = createBinding(
+      viewModel, MyViewModel.someProperty,
+      bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay,
+      valueConverter: NumberValueConverter());
+}
+```
+
+Value conversion can also be used by FmvvmStatelessWidgets when calling the getValueWithConversion method.
+
+```
+getValueWithConversion(viewModel, viewModel.counter, NumberValueConverter());
+```
+
+## Navigation
+
+## Bootstraping fmvvm
+
+## putting it all together

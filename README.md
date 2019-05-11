@@ -20,6 +20,40 @@ Implementing the MVVM pattern is about having a formal architecture in your appl
 * Dependancy injection can be used to pass required information to a viewmodel.
 
 # Using fmvvm
+
+## Bootstraping fmvvm
+Bootstrapping fmvvm is pretty easy. To get a reference to fmvvm add the following line to the dependencies section of the pubspec.yaml file:
+
+```
+fmvvm:
+```
+
+Before you start you will want to call Core.Initialize() when creating the app and register any dependencies using the component resolver. By default the NavigationService and ViewLocator as registers with the component resolver.
+
+```
+class MyApp extends StatelessWidget {
+  MyApp() {
+    Core.initialize();
+
+    var componentResolver = Core.componentResolver;
+
+    componentResolver.registerType<MyViewModel>(() {
+      return MyViewModel(
+          componentResolver.resolveType<NavigationService>());
+    });
+    componentResolver.registerType<SomeOtherViewModel>(() {
+      return SomeOtherViewModel();
+    });
+  }
+}
+```
+
+In the above case we have initialized the fmvvm library and registered two viewmodels. The MyViewModel class is having the NavigationService resolved and passed to it's constructor.
+
+If you want custom versions of the ComponentResolver, ViewLocator or NavigtationService you can create your own versions that are returned from a custom Registrations class that is passed as a parameter to the initialize method. What each of these do will be explianed later in the documentation.
+
+How to set up what widget is displayed by default for your app is explained in the Navigation section.
+
 ## Viewmodels
 Viewmodels are the primary glue that backs a widget. Viewmodels should inherit from ViewModelBase.
 
@@ -170,7 +204,7 @@ Creating a stateless widget should look like this:
 
 ```
 class MyStatelessWidget extends FmvvmStatelessWidget<SomeViewModel> {
-  MyStatelessWidget(fmvvm_interfaces.ViewModel viewModel, {Key key})
+  MyStatelessWidget(ViewModel viewModel, {Key key})
       : super(viewModel, true, key: key);
 }
 ```
@@ -259,7 +293,7 @@ void initState() {
 
   _myBinding = createBinding(
       viewModel, MyViewModel.someProperty,
-      bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay);
+      bindingDirection: BindingDirection.TwoWay);
 }
 ```
 
@@ -325,7 +359,7 @@ void initState() {
   _myController = TextEditingController();
   _myBinding = createBinding(
       viewModel, MyViewModel.someProperty,
-      bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay);
+      bindingDirection: BindingDirection.TwoWay);
   _myController.addListener(getTargetValuedTextChanged(_myBinding, _myController));
   }
 ```
@@ -391,7 +425,7 @@ What does this have to do with value conversion? Simply that it is expected that
 First we create a class that can convert back and forth:
 
 ```
-class NumberValueConverter implements fmvvm_interfaces.ValueConverter {
+class NumberValueConverter implements ValueConverter {
   Object convert(Object source, Object value) {
     return value.toString();
   }
@@ -413,7 +447,7 @@ void initState() {
 
   _myBinding = createBinding(
       viewModel, MyViewModel.someProperty,
-      bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay,
+      bindingDirection: BindingDirection.TwoWay,
       valueConverter: NumberValueConverter());
 }
 ```
@@ -425,7 +459,303 @@ getValueWithConversion(viewModel, viewModel.counter, NumberValueConverter());
 ```
 
 ## Navigation
+fmvvm allows you to do viewmodel to viewmodel navigation. That is to say that when you want to navigate, that is application business logic that should happen in the viewmodel, usually within a command. Since the viewmodel doesn't know anything about the presentation layer, it just states what other viewmodel in the system to navigation to. Consider the following code:
 
-## Bootstraping fmvvm
+```
+navigationService.navigate<SomeOtherViewModel>(parameter: "58");
+```
+
+In this case the viewmodel will try to navigate to some otehr viewmodel of the type, SomeOtherViewModel. Additionally, a value of "58" will be sent to the SomeOtherViewModel's init method.
+
+So how does it tell what widget to use for that view? By default it used a naming convention. It assumes that all viewmodels are named xyzViewModel and its associated widget has a route named xyzView. This default convention to resolve widgets from views can be overriden by creating your own instance of the ViewLocator class and passing it in to the core.initilaze method.
+
+In order for all this to work a couple of things need to be true.
+
+* The widget diplaying the viewmodel needs to have its isNavicable property set to true.
+* The widget that is displaying the viewmodel we are navigating to needs to have its isNavicable property set to true.
+* The viewmodel we are navigating to needs to be registered in the component resolver.
+* The viewmodel and associated route need to be named appropriately or another method of viewmodel resolution needs to be provided.
+
+Here is how those routes can be set up:
+
+```
+@override
+Widget build(BuildContext context) {
+  return MaterialApp(
+    title: 'fmvvm Demo',
+    theme: ThemeData(
+      primarySwatch: Colors.blue,
+    ),
+    initialRoute: 'HomePageView',
+    onGenerateRoute: _getRoute,
+  );
+}
+
+  Route<dynamic> _getRoute(RouteSettings settings) {
+    if (settings.name == 'HomePageView') {
+      var arguments = settings.arguments ??
+          Core.componentResolver
+              .resolveType<NavigationService>()
+              .createViewModel<HomePageViewModel>(null);
+      return _buildRoute(settings, new HomePageView(arguments));
+    } else if (settings.name == 'SomeOtherView') {
+      return _buildRoute(settings, new SomeOtherView(settings.arguments));
+    }
+    return null;
+  }
+```
+
+A few things to notice, we don't normally do anything to create or pass an instance of the viewmodel to the widget in the route. This is done for us by the NavigationService's navigate method. It is sent with the settings.arguments. The exception to this is the initialRoute, when the app first starts. This isn't navigated to using the NavigationService.navigate method. For this we have to check and see that the settings.arguments are null and if so set it to an instance of the viewmodel using the NavigationService's createViewModel method.
+
+__The NavigationService's navigate method returns a Future so the calling viewmodel can await the navigation operation being completed.__
+
+Navigating back is as simple as calling:
+
+```
+NaivgationService.navigateBack();
+```
 
 ## putting it all together
+Here is a sample app that puts together the concepts we have discussed.
+
+```
+import 'package:flutter/material.dart';
+
+import 'package:fmvvm/bindings/bindings.dart';
+import 'package:fmvvm/fmvvm.dart';
+import 'package:fmvvm/interfaces/interfaces.dart' as fmvvm_interfaces;
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  MyApp() {
+    Core.initialize();
+
+    var componentResolver = Core.componentResolver;
+
+    componentResolver.registerType<_HomePageViewModel>(() {
+      return _HomePageViewModel(
+          componentResolver.resolveType<fmvvm_interfaces.NavigationService>());
+    });
+    componentResolver.registerType<_CounterViewModel>(() {
+      return _CounterViewModel();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'fmvvm Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      initialRoute: '_HomePageView',
+      onGenerateRoute: _getRoute,
+    );
+  }
+
+  Route<dynamic> _getRoute(RouteSettings settings) {
+    if (settings.name == '_HomePageView') {
+      var arguments = settings.arguments ??
+          Core.componentResolver
+              .resolveType<fmvvm_interfaces.NavigationService>()
+              .createViewModel<_HomePageViewModel>(null);
+      return _buildRoute(settings, new _HomePageView(arguments));
+    } else if (settings.name == '_CounterView') {
+      return _buildRoute(settings, new _CounterView(settings.arguments));
+    }
+    return null;
+  }
+
+  MaterialPageRoute _buildRoute(RouteSettings settings, Widget builder) {
+    return new MaterialPageRoute(
+      settings: settings,
+      builder: (ctx) => builder,
+    );
+  }
+}
+
+class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
+  _HomePageView(fmvvm_interfaces.ViewModel viewModel, {Key key, this.title})
+      : super(viewModel, key: key);
+
+  final String title;
+
+  @override
+  _HomePageViewState createState() => _HomePageViewState(viewModel);
+}
+
+class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
+  _HomePageViewState(_HomePageViewModel viewModel) : super(viewModel, true);
+
+  TextEditingController controller;
+  TextEditingController controller2;
+  Binding _counterBinding;
+  Binding _boolBinding;
+  Binding _boolBinding1;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = TextEditingController();
+    controller2 = TextEditingController();
+    _counterBinding = createBinding(
+        viewModel, _HomePageViewModel.counterProperty,
+        bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay,
+        valueConverter: _NumberValueConverter());
+    controller
+        .addListener(getTargetValuedTextChanged(_counterBinding, controller));
+    _boolBinding = createBinding(viewModel, _HomePageViewModel.testBoolProperty,
+        bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay);
+    _boolBinding1 = createBinding(
+        viewModel, _HomePageViewModel.testBoolProperty,
+        bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    controller.text = getValue(_counterBinding);
+    controller2.text = getValue(_counterBinding);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Counter'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'You have pushed the button this many times:',
+            ),
+            Hero(
+              tag: 'countHero',
+              child: Text(getValue(_counterBinding)),
+            ),
+            TextField(
+              style: Theme.of(context).textTheme.display1,
+              controller: controller,
+            ),
+            TextField(
+              style: Theme.of(context).textTheme.display1,
+              controller: controller2,
+              onChanged: getOnChanged(_counterBinding),
+            ),
+            Switch(
+              value: getValue(_boolBinding) as bool,
+              onChanged: getOnChanged(_boolBinding),
+            ),
+            Switch(
+              value: getValue(_boolBinding1) as bool,
+              onChanged: getOnChanged(_boolBinding1),
+            ),
+            FlatButton(
+                child: Text(
+                  'Navigate',
+                ),
+                onPressed: () {
+                  viewModel.navigate.execute();
+                }),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: viewModel.incrementCounter.execute,
+        tooltip: 'Increment',
+        child: Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
+  _CounterView(_CounterViewModel viewModel, {Key key})
+      : super(viewModel, true, key: key);
+
+  final _NumberValueConverter _valueConverter = _NumberValueConverter();
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('Current Count'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                'Counter Value:',
+              ),
+              Hero(
+                tag: 'countHero',
+                child: Text(getValueWithConversion(viewModel, viewModel.counter, _valueConverter)),
+              ),
+            ],
+          ),
+        ));
+  }
+}
+
+class _HomePageViewModel extends ViewModelBase {
+  _HomePageViewModel(this._navigationService);
+
+  final fmvvm_interfaces.NavigationService _navigationService;
+
+  static PropertyInfo counterProperty = PropertyInfo('counter', int);
+
+  int get counter => getValue(counterProperty);
+  set counter(int value) => setValue(counterProperty, value);
+
+  static PropertyInfo currentDateProperty = PropertyInfo('currentDate', int);
+
+  DateTime get currentDate => getValue(currentDateProperty);
+  set currentDate(DateTime value) => setValue(currentDateProperty, value);
+
+  static PropertyInfo testBoolProperty = PropertyInfo('testBool', bool, false);
+
+  bool get testBool => getValue(testBoolProperty);
+  set testBool(bool value) => setValue(testBoolProperty, value);
+
+  Command _incrementCounter;
+
+  Command get incrementCounter {
+    _incrementCounter ??= Command(() {
+      counter++;
+    });
+    return _incrementCounter;
+  }
+
+  Command _navigate;
+
+  Command get navigate {
+    _navigate ??= Command(() {
+      _navigationService.navigate<_CounterViewModel>(parameter: counter);
+    });
+    return _navigate;
+  }
+}
+
+class _CounterViewModel extends ViewModelBase {
+  @override
+  void init(Object parameter) {
+    setValue(counterProperty, parameter);
+  }
+
+  static PropertyInfo counterProperty = PropertyInfo('counter', int);
+  int get counter => getValue(counterProperty);
+}
+
+class _NumberValueConverter implements fmvvm_interfaces.ValueConverter {
+  Object convert(Object source, Object value) {
+    return value.toString();
+  }
+
+  Object convertBack(Object source, Object value) {
+    return int.tryParse(value) ?? 0;
+  }
+}
+```

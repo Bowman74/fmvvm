@@ -1,4 +1,4 @@
-part of fmvvm_bindings;
+part of fmvvm.bindings;
 
 class Command {
   Command(Function function) {

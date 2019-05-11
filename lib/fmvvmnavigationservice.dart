@@ -1,12 +1,12 @@
 part of fmvvm;
 
-class FmvvmNavigationService extends NavigationService {
+class FmvvmNavigationService implements NavigationService {
 
   BuildContext _currentContext;
-  @override
+
   Future<void> navigate<T extends ViewModel>({Object parameter}) async {
 
-    var _viewModel = _createViewModel<T>(parameter);
+    var _viewModel = createViewModel<T>(parameter);
 
     var routeName = Core.viewLocator.getViewFromViewModelType<T>();
 
@@ -15,19 +15,18 @@ class FmvvmNavigationService extends NavigationService {
     _viewModel.appeared();
   }
 
-  ViewModel _createViewModel<T extends ViewModel>(Object parameter) {
+  ViewModel createViewModel<T extends ViewModel>(Object parameter) {
     ViewModel _viewModel =  Core.componentResolver.resolveType<T>();
     _viewModel.init(parameter);
     return _viewModel;
   }
 
-  @override
   void navigateBack() {
     Navigator.pop(_currentContext);
   }
 
-  @override
   set currentContext(BuildContext context) {
     _currentContext = context;
   }
+
 }

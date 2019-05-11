@@ -1,7 +1,7 @@
-part of fmvvm_bindings;
+part of fmvvm.bindings;
 
-abstract class FmvvmStatefulWidget<V extends ViewModel> extends StatefulWidget
-    implements ViewModelHolder<V> {
+abstract class FmvvmStatefulWidget<V extends fmvvm_interfaces.ViewModel> extends StatefulWidget
+    implements fmvvm_interfaces.ViewModelHolder<V> {
   FmvvmStatefulWidget(this._viewModel, {Key key}) : super(key: key);
 
   final V _viewModel;

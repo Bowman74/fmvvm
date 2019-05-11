@@ -1,6 +1,6 @@
-part of fmvvm_bindings;
+part of fmvvm.bindings;
 
-class PropertyInfo {
+class PropertyInfo implements fmvvm_interfaces.PropertyInfo {
   String _name;
   Object _defaultValue;
   Type _type;
@@ -29,7 +29,7 @@ class PropertyInfo {
   int get id => _id;
   _setIdentifier(int value) => _id = value;
 
-  FieldData createFieldData() {
+  fmvvm_interfaces.FieldData createFieldData() {
     return new FieldData(_name, id, _defaultValue);
   }
 }

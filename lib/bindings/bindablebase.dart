@@ -1,10 +1,10 @@
-part of fmvvm_bindings;
+part of fmvvm.bindings;
 
-abstract class BindableBase implements NotifyChanges {
+abstract class BindableBase implements fmvvm_interfaces.BindableBase {
   StreamController _elementChangedController = StreamController.broadcast();
   FieldManager _fieldManager = FieldManager();
 
-  void setValue(PropertyInfo propertyInfo, Object value) {
+  void setValue(fmvvm_interfaces.PropertyInfo propertyInfo, Object value) {
     if (_fieldManager.getValue(propertyInfo) != value) {
       _fieldManager.setValue(propertyInfo, value);
 
@@ -12,7 +12,7 @@ abstract class BindableBase implements NotifyChanges {
     }
   }
 
-  Object getValue(PropertyInfo propertyInfo) {
+  Object getValue(fmvvm_interfaces.PropertyInfo propertyInfo) {
     return _fieldManager.getValue(propertyInfo);
   }
 

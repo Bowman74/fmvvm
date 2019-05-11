@@ -1,33 +1,31 @@
-part of fmvvm_bindings;
+part of fmvvm.bindings;
 
-class Binding {
+class Binding implements fmvvm_interfaces.Binding {
   Binding(BindableBase source, PropertyInfo sourceProperty, 
-      {BindingDirection bindingDirection,
-      ValueConverter valueConverter}) {
+      {fmvvm_interfaces.BindingDirection bindingDirection,
+      fmvvm_interfaces.ValueConverter valueConverter}) {
     this.source = source;
     _sourceProperty = sourceProperty;
 
-    _bindingDirection = bindingDirection ?? BindingDirection.OneWay;
+    _bindingDirection = bindingDirection ?? fmvvm_interfaces.BindingDirection.OneWay;
     _valueConverter = valueConverter;
   }
 
-  BindingDirection _bindingDirection;
+  fmvvm_interfaces.BindingDirection _bindingDirection;
 
   PropertyInfo _sourceProperty;
 
-  ValueConverter _valueConverter;
+  fmvvm_interfaces.ValueConverter _valueConverter;
 
-  BindableBase source;
+  fmvvm_interfaces.BindableBase source;
 
-  BindingDirection get bindingDirection => _bindingDirection;
+  fmvvm_interfaces.BindingDirection get bindingDirection => _bindingDirection;
 
   PropertyInfo get sourceProperty => _sourceProperty;
 
-  ValueConverter get valueConverter => _valueConverter;
+  fmvvm_interfaces.ValueConverter get valueConverter => _valueConverter;
 
-  Object _originalValue = _OriginalValueNeverSet;
+  Object originalValue = _OriginalValueNeverSet;
 }
-
-enum BindingDirection { OneWay, TwoWay, OneTime }
 
 class _OriginalValueNeverSet {}

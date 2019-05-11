@@ -1,13 +1,17 @@
-library fmvvm_interfaces;
+library fmvvm.interfaces;
 
 import 'dart:async';
-import 'package:flutter/widgets.dart';
-import 'package:fmvvm/bindings/bindings.dart';
 
-part 'valueconverter.dart';
+import 'package:flutter/widgets.dart';
+
+part 'bindablebase.dart';
+part 'binding.dart';
+part 'componentresolver.dart';
+part 'fielddata.dart';
 part 'navigationservice.dart';
 part 'notifychanges.dart';
-part 'componentresolver.dart';
+part 'propertyinfo.dart';
+part 'valueconverter.dart';
 part 'viewlocator.dart';
 part 'viewmodel.dart';
 part 'viewmodelholder.dart';

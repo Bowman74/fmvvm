@@ -1,5 +1,5 @@
-library fmvvm_utilities;
+library fmvvm.utilities;
 
 class Utilities {
-    static Type typeOf<T>() => T;
+  static Type typeOf<T>() => T;
 }

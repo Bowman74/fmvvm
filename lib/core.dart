@@ -16,10 +16,6 @@ class Core {
       _componentResolver.registerInstance<NavigationService>(Core.navigationService);
   }
 
-  static Future start<T extends ViewModelBase>({Object parameter, BuildContext context}) async {
-    await _navigationService.navigate<T>();
-  }
-
   static ComponentResolver get componentResolver => _componentResolver;
   static NavigationService get navigationService => _navigationService;
   static ViewLocator get viewLocator => _viewLocator;

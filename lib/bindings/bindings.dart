@@ -1,18 +1,18 @@
-library fmvvm_bindings;
+library fmvvm.bindings;
 
-import 'package:fmvvm/interfaces/interfaces.dart';
-import 'package:fmvvm/fmvvm.dart';
 import 'dart:async';
-import 'package:flutter/material.dart';
 
-part 'propertyinfo.dart';
+import 'package:flutter/material.dart';
+import 'package:fmvvm/interfaces/interfaces.dart' as fmvvm_interfaces;
+import 'package:fmvvm/fmvvm.dart';
+
 part 'bindablebase.dart';
+part 'binding.dart';
+part 'command.dart';
 part 'fielddata.dart';
 part 'fieldmanager.dart';
-part 'binding.dart';
 part 'fmvvmstate.dart';
-part 'fmvvmstatelesswidget.dart';
 part 'fmvvmstatefulwidget.dart';
-part 'bindingmanager.dart';
+part 'fmvvmstatelesswidget.dart';
+part 'propertyinfo.dart';
 part 'viewmodelbase.dart';
-part 'command.dart';

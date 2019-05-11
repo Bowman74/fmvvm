@@ -1,4 +1,4 @@
-part of fmvvm_interfaces;
+part of fmvvm.interfaces;
 
 abstract class ValueConverter { 
   Object convert(Object source, Object value);

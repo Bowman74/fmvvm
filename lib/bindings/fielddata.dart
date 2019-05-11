@@ -1,6 +1,6 @@
-part of fmvvm_bindings;
+part of fmvvm.bindings;
 
-class FieldData<T> {
+class FieldData<T> implements fmvvm_interfaces.FieldData {
   String _name;
   int _id;
   T value;

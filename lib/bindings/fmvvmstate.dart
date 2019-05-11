@@ -134,7 +134,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends fmvvm_interfaces.V
   @mustCallSuper
   Widget build(BuildContext context) {
     if (_isNavigatable) {
-      Core.navigationService.currentContext = context;
+      Core.componentResolver.resolveType<fmvvm_interfaces.NavigationService>().currentContext = context;
     }
     return null;
   }

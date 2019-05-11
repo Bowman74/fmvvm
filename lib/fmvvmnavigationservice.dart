@@ -13,7 +13,7 @@ class FmvvmNavigationService implements NavigationService {
 
     var _viewModel = createViewModel<T>(parameter);
 
-    var routeName = Core.viewLocator.getViewFromViewModelType<T>();
+    var routeName = Core._viewLocator.getViewFromViewModelType<T>();
 
     await Navigator.pushNamed(_currentContext, routeName, arguments: _viewModel);
   }

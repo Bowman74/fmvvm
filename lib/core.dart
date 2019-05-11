@@ -19,18 +19,12 @@ class Core {
     _viewLocator = startRegistrations.getViewLocator();
     _componentResolver = startRegistrations.getResolver();
 
-      _componentResolver.registerInstance<ViewLocator>(Core.viewLocator);
-      _componentResolver.registerInstance<NavigationService>(Core.navigationService);
+      _componentResolver.registerInstance<ViewLocator>(_viewLocator);
+      _componentResolver.registerInstance<NavigationService>(_navigationService);
   }
 
   /// A global reference to the registered object for dependency injection/IoC.
   static ComponentResolver get componentResolver => _componentResolver;
   /// A global reference to the navigation service used by the system.
   /// 
-  /// This can unually also be returned by the componentResolver.
-  static NavigationService get navigationService => _navigationService;
-  /// A global reference to the view location service used by the system.
-  /// 
-  /// This can unually also be returned by the componentResolver.
-  static ViewLocator get viewLocator => _viewLocator;
 }

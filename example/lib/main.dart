@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'fmvvm Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -65,7 +65,7 @@ class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
 }
 
 class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
-  _HomePageViewState(fmvvm_interfaces.ViewModel viewModel) : super(viewModel, true);
+  _HomePageViewState(_HomePageViewModel viewModel) : super(viewModel, true);
 
   TextEditingController controller;
   TextEditingController controller2;
@@ -150,7 +150,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
 }
 
 class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
-  _CounterView(fmvvm_interfaces.ViewModel viewModel, {Key key})
+  _CounterView(_CounterViewModel viewModel, {Key key})
       : super(viewModel, true, key: key);
 
   final _NumberValueConverter _valueConverter = _NumberValueConverter();
@@ -229,12 +229,10 @@ class _CounterViewModel extends ViewModelBase {
 }
 
 class _NumberValueConverter implements fmvvm_interfaces.ValueConverter {
-  @override
   Object convert(Object source, Object value) {
     return value.toString();
   }
 
-  @override
   Object convertBack(Object source, Object value) {
     return int.tryParse(value) ?? 0;
   }

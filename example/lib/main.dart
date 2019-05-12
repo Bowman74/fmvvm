@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:fmvvm/bindings/bindings.dart';
 import 'package:fmvvm/fmvvm.dart';
-import 'package:fmvvm/interfaces/interfaces.dart' as fmvvm_interfaces;
+import 'package:fmvvm/interfaces/interfaces.dart';
 
 void main() => runApp(MyApp());
 
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
 
     componentResolver.registerType<_HomePageViewModel>(() {
       return _HomePageViewModel(
-          componentResolver.resolveType<fmvvm_interfaces.NavigationService>());
+          componentResolver.resolveType<NavigationService>());
     });
     componentResolver.registerType<_CounterViewModel>(() {
       return _CounterViewModel();
@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
     if (settings.name == '_HomePageView') {
       var arguments = settings.arguments ??
           Core.componentResolver
-              .resolveType<fmvvm_interfaces.NavigationService>()
+              .resolveType<NavigationService>()
               .createViewModel<_HomePageViewModel>(null);
       return _buildRoute(settings, new _HomePageView(arguments));
     } else if (settings.name == '_CounterView') {
@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
 }
 
 class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
-  _HomePageView(fmvvm_interfaces.ViewModel viewModel, {Key key, this.title})
+  _HomePageView(ViewModel viewModel, {Key key, this.title})
       : super(viewModel, key: key);
 
   final String title;
@@ -81,15 +81,15 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
     controller2 = TextEditingController();
     _counterBinding = createBinding(
         viewModel, _HomePageViewModel.counterProperty,
-        bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay,
+        bindingDirection: BindingDirection.TwoWay,
         valueConverter: _NumberValueConverter());
     controller
         .addListener(getTargetValuedTextChanged(_counterBinding, controller));
     _boolBinding = createBinding(viewModel, _HomePageViewModel.testBoolProperty,
-        bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay);
+        bindingDirection: BindingDirection.TwoWay);
     _boolBinding1 = createBinding(
         viewModel, _HomePageViewModel.testBoolProperty,
-        bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay);
+        bindingDirection: BindingDirection.TwoWay);
   }
 
   @override
@@ -179,10 +179,10 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
   }
 }
 
-class _HomePageViewModel extends ViewModelBase {
+class _HomePageViewModel extends ViewModel {
   _HomePageViewModel(this._navigationService);
 
-  final fmvvm_interfaces.NavigationService _navigationService;
+  final NavigationService _navigationService;
 
   static PropertyInfo counterProperty = PropertyInfo('counter', int);
 
@@ -218,7 +218,7 @@ class _HomePageViewModel extends ViewModelBase {
   }
 }
 
-class _CounterViewModel extends ViewModelBase {
+class _CounterViewModel extends ViewModel {
   @override
   void init(Object parameter) {
     setValue(counterProperty, parameter);
@@ -228,7 +228,7 @@ class _CounterViewModel extends ViewModelBase {
   int get counter => getValue(counterProperty);
 }
 
-class _NumberValueConverter implements fmvvm_interfaces.ValueConverter {
+class _NumberValueConverter implements ValueConverter {
   Object convert(Object source, Object value) {
     return value.toString();
   }

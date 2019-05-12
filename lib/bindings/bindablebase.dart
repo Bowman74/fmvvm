@@ -1,13 +1,13 @@
 part of fmvvm.bindings;
 
 /// Class to be extended when creating any non widget object that can be bound to.
-abstract class BindableBase implements fmvvm_interfaces.BindableBase {
+abstract class BindableBase {
   StreamController _elementChangedController = StreamController.broadcast();
   FieldManager _fieldManager = FieldManager();
 
   /// Gives a new value to a property.
   @protected
-  void setValue(fmvvm_interfaces.PropertyInfo propertyInfo, Object value) {
+  void setValue(PropertyInfo propertyInfo, Object value) {
     if (_fieldManager.getValue(propertyInfo) != value) {
       _fieldManager.setValue(propertyInfo, value);
 
@@ -19,7 +19,7 @@ abstract class BindableBase implements fmvvm_interfaces.BindableBase {
   /// 
   /// If the property has not been set, the default value will be returned.
   @protected
-  Object getValue(fmvvm_interfaces.PropertyInfo propertyInfo) {
+  Object getValue(PropertyInfo propertyInfo) {
     return _fieldManager.getValue(propertyInfo);
   }
 

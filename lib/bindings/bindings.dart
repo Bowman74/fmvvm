@@ -14,5 +14,9 @@ part 'fieldmanager.dart';
 part 'fmvvmstate.dart';
 part 'fmvvmstatefulwidget.dart';
 part 'fmvvmstatelesswidget.dart';
+part 'navigationservice.dart';
 part 'propertyinfo.dart';
-part 'viewmodelbase.dart';
+part 'viewlocator.dart';
+part 'viewmodel.dart';
+part 'viewmodelholder.dart';
+

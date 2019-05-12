@@ -5,8 +5,8 @@ part of fmvvm.bindings;
 /// Databinding is not allowed in a StatelessWidget per se as there is no ability to update
 /// in either direction. Instead the values in the ViewModel can be retrived and used 
 /// in construction of the widget.
-abstract class FmvvmStatelessWidget<V extends fmvvm_interfaces.ViewModel>
-    extends StatelessWidget implements fmvvm_interfaces.ViewModelHolder<V> {
+abstract class FmvvmStatelessWidget<V extends ViewModel>
+    extends StatelessWidget implements ViewModelHolder<V> {
   
   /// Creates the FmvvmStatelessWidget object.
   /// 
@@ -29,7 +29,7 @@ abstract class FmvvmStatelessWidget<V extends fmvvm_interfaces.ViewModel>
   @mustCallSuper
   Widget build(BuildContext context) {
     if (_isNavigable) {
-      Core.componentResolver.resolveType<fmvvm_interfaces.NavigationService>().currentContext = context;
+      Core.componentResolver.resolveType<NavigationService>().currentContext = context;
     }
     return null;
   }

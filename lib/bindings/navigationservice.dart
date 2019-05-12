@@ -1,4 +1,4 @@
-part of fmvvm.interfaces;
+part of fmvvm.bindings;
 
 /// Interface for a navigation service for use by view models.
 /// 

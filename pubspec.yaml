@@ -1,8 +1,8 @@
 name: fmvvm
-description: A new Flutter package project.
-version: 0.0.2
-author:
-homepage:
+description: An mvvm framework for Flutter.
+version: 0.8.0
+author: "Kevin E Ford <bowman74@hotmail.com>"
+homepage: https://github.com/Bowman74/fmvvm
 
 environment:
     sdk: ">=2.2.0 <3.0.0"

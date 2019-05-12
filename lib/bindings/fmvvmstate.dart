@@ -4,8 +4,8 @@ part of fmvvm.bindings;
 /// 
 /// This class must be exended whenever data binding is desired for a StatelfulWidget.
 /// Intended to be used in conjenction with the FmvvmStatefulWidget class.
-abstract class FmvvmState<T extends StatefulWidget, V extends fmvvm_interfaces.ViewModel> extends State<T>
-    implements fmvvm_interfaces.ViewModelHolder<V> {
+abstract class FmvvmState<T extends StatefulWidget, V extends ViewModel> extends State<T>
+    implements ViewModelHolder<V> {
 
   /// Creates the FmvvmState object.
   /// 
@@ -37,7 +37,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends fmvvm_interfaces.V
   /// the value for this binding.
   @protected
   Binding createBinding(BindableBase source, PropertyInfo property,
-      {fmvvm_interfaces.BindingDirection bindingDirection, fmvvm_interfaces.ValueConverter valueConverter}) {
+      {BindingDirection bindingDirection, fmvvm_interfaces.ValueConverter valueConverter}) {
     var binding = Binding(source, property,
         bindingDirection: bindingDirection, valueConverter: valueConverter);
 
@@ -50,7 +50,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends fmvvm_interfaces.V
   void _addBindingAndCreateListener(List<Binding> bindings, Binding binding) {
     if (!bindings.any((b) => b.source == binding.source)) {
       var subscription = binding.source.onChanged.listen((fieldName) {
-        if (binding.bindingDirection == fmvvm_interfaces.BindingDirection.TwoWay &&
+        if (binding.bindingDirection == BindingDirection.TwoWay &&
             (fieldName == "" ||
                 bindings.any((b) =>
                     b.sourceProperty.name == fieldName &&
@@ -73,7 +73,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends fmvvm_interfaces.V
   @protected
   Object getValue(Binding binding) {
     Object returnValue;
-    if (binding.bindingDirection == fmvvm_interfaces.BindingDirection.OneTime &&
+    if (binding.bindingDirection == BindingDirection.OneTime &&
         !binding.originalValue is _OriginalValueNeverSet) {
       returnValue = binding.originalValue;
     } else if (binding.valueConverter == null) {
@@ -114,7 +114,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends fmvvm_interfaces.V
   @protected
   Function getTargetValuedTextChanged(
       Binding binding, TextEditingController controller) {
-    assert(binding.bindingDirection == fmvvm_interfaces.BindingDirection.TwoWay);
+    assert(binding.bindingDirection == BindingDirection.TwoWay);
     return () => {setValue(binding, controller.value.text)};
   }
 
@@ -123,7 +123,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends fmvvm_interfaces.V
   /// Passes any changes made by the user back to the view model
   @protected
   Function getOnChanged(Binding binding) {
-    assert(binding.bindingDirection == fmvvm_interfaces.BindingDirection.TwoWay);
+    assert(binding.bindingDirection == BindingDirection.TwoWay);
     return (Object newValue) => {setValue(binding, newValue)};
   }
 
@@ -134,7 +134,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends fmvvm_interfaces.V
   @mustCallSuper
   Widget build(BuildContext context) {
     if (_isNavigable) {
-      Core.componentResolver.resolveType<fmvvm_interfaces.NavigationService>().currentContext = context;
+      Core.componentResolver.resolveType<NavigationService>().currentContext = context;
     }
     return null;
   }

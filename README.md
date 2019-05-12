@@ -182,13 +182,13 @@ __Extreme care must be taken when resolving other components within a registerTy
 ### Resolving components
 Components are resolved from the componentResolver by type, either by passing ther type as a parameter or as a generic.
 
-####Passing the type by parameter
+#### Passing the type by parameter
 
 ```
 var myClass = Core.ComponentResolver.resolve(MyClass);
 ```
 
-####Using a generic type
+#### Using a generic type
 
 ```
 var myClass = Core.ComponentResolver.resolve<MyClass>();

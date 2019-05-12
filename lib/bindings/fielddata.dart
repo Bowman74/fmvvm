@@ -1,7 +1,7 @@
 part of fmvvm.bindings;
 
 /// Contains the data backing a PropertyInfo for an instance of a class.
-class FieldData<T> implements fmvvm_interfaces.FieldData<T> {
+class FieldData<T> {
   String _name;
   int _id;
 

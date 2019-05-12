@@ -4,7 +4,7 @@ part of fmvvm.bindings;
 /// 
 /// These are normally static references within a class that
 /// inherits from BindableBase.
-class PropertyInfo implements fmvvm_interfaces.PropertyInfo {
+class PropertyInfo {
   String _name;
   Object _defaultValue;
   Type _type;
@@ -45,7 +45,7 @@ class PropertyInfo implements fmvvm_interfaces.PropertyInfo {
   _setIdentifier(int value) => _id = value;
 
   /// Used by fmvvm to create backing information for this property info.
-  fmvvm_interfaces.FieldData createFieldData() {
+  FieldData createFieldData() {
     return new FieldData(_name, id, _defaultValue);
   }
 }

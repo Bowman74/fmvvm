@@ -12,11 +12,11 @@ void main() {
     expect(testViewModel.stringTest, _expectedValue);
   });
 
-    test('ensures onChanged raised correctly', () {
-      final testViewModel = _TestViewModel();
-      Timer t;
+  test('ensures onChanged raised correctly', () {
+    final testViewModel = _TestViewModel();
+    Timer t;
 
-      testViewModel.onChanged.first.then(expectAsync1((e) {
+    testViewModel.onChanged.first.then(expectAsync1((e) {
       expect(e, equals("stringTest"));
       if (t != null) {
         t.cancel();
@@ -24,7 +24,7 @@ void main() {
     }));
 
 
-      String _expectedValue = 'foo';
+    String _expectedValue = 'foo';
 
     t = new Timer(new Duration(seconds: 3), () {
       fail('event not fired in time');

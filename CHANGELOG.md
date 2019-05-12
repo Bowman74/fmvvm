@@ -1,3 +1,7 @@
-## [0.0.1] - TODO: Add release date.
+## [0.8.0] - 11/5/2019.
 
-* TODO: Describe initial release.
+* TODO: Initial release includes:
+ 
+- Dependency injection
+- Data binding
+- viewmodel to viewmodel navigation

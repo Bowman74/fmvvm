@@ -8,7 +8,7 @@ part of fmvvm;
 class Registrations {
   /// Returns a reference to the ComponentResolver to be used by fmvvm.
   ComponentResolver getResolver() {
-    return FmvvmContainer();
+    return ComponentResolver();
   }
 
   /// Returns a reference to the NavigationService to be used by fmvvm.

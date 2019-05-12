@@ -1,4 +1,4 @@
-part of fmvvm.interfaces;
+part of fmvvm.bindings;
 
 /// Interface to be implemented by objects that retain references to view models.
 abstract class ViewModelHolder<T extends ViewModel> {

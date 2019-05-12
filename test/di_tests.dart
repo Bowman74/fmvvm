@@ -10,7 +10,7 @@ void main() {
 
     simpleConstructor.stringTest = _expectedValue;
 
-    var container = FmvvmContainer();
+    var container = ComponentResolver();
     container.resetRegistrations();
 
     container.registerInstance(simpleConstructor);
@@ -27,7 +27,7 @@ void main() {
 
     simpleConstructor.stringTest = _expectedValue;
 
-    var container = FmvvmContainer();
+    var container = ComponentResolver();
     container.resetRegistrations();
 
     container.registerInstance(simpleConstructor);
@@ -40,7 +40,7 @@ void main() {
 
 test('Factory instance can be registered and retrieved from IoC container as type', () {
 
-    var container = FmvvmContainer();
+    var container = ComponentResolver();
     container.resetRegistrations();
 
     container.registerType<_SimpleConstructor>(() {return _SimpleConstructor();});
@@ -53,7 +53,7 @@ test('Factory instance can be registered and retrieved from IoC container as typ
 
   test('Complex factory instance can be registered and retrieved from IoC container as type', () {
 
-    var container = FmvvmContainer();
+    var container = ComponentResolver();
     container.resetRegistrations();
 
     container.registerType<_SimpleConstructor>(() {return _SimpleConstructor();});

@@ -1,8 +1,8 @@
 part of fmvvm;
 
 /// The default fmvvm dependency injection/IoC implementation.
-class FmvvmContainer implements ComponentResolver {
-  FmvvmContainer() {
+class ComponentResolver {
+  ComponentResolver() {
     if (_dependencyRegistrations == null) {
       _dependencyRegistrations = List<_DependencyRegistration>();
     }

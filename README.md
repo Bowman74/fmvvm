@@ -55,17 +55,17 @@ If you want custom versions of the ComponentResolver, ViewLocator or Navigtation
 How to set up what widget is displayed by default for your app is explained in the Navigation section.
 
 ## Viewmodels
-Viewmodels are the primary glue that backs a widget. Viewmodels should inherit from ViewModel.
+Viewmodels are the primary glue that backs a widget. Viewmodels should inherit from ViewModelBase.
 
 ```
 import 'package:fmvvm/bindings/bindings.dart';
 
-class SampleViewModel extends ViewModel {
+class SampleViewModel extends ViewModelBase {
 }
 ```
 
 ### Adding propties
-Properties that can be bound to should use the PropertyInfo object. Any object that inherits from BindableBase, including ViewModel, can create bindable properties.
+Properties that can be bound to should use the PropertyInfo object. Any object that inherits from BindableBase, including ViewModelBase, can create bindable properties.
 
 Creating a new PropertyInfo object should:
 
@@ -182,13 +182,13 @@ __Extreme care must be taken when resolving other components within a registerTy
 ### Resolving components
 Components are resolved from the componentResolver by type, either by passing ther type as a parameter or as a generic.
 
-####Passing the type by parameter
+#### Passing the type by parameter
 
 ```
 var myClass = Core.ComponentResolver.resolve(MyClass);
 ```
 
-####Using a generic type
+#### Using a generic type
 
 ```
 var myClass = Core.ComponentResolver.resolve<MyClass>();
@@ -273,7 +273,7 @@ class MyState extends FmvvmState<MyStatefulWidget, MyViewModel> {
 }
 ```
 
-Like the FmvvmStatlessWidget, the second parameter sent to the super class defines if this widget is navigable (like a page) or not (like a widget in a page). Pass true if it is navigable.
+Like the FmvvmStatlessWidget, the second parameter sent to the super class defines if this widget is navicable (like a page) or not (like a widget in a page). Pass true if it is navicable.
 
 #### Bindings on stateful widgets
 This is where things get more complex. With stateful widgets bindings can be bi-directional. That is to say, when values in the viewmodel change we want to update the widget and when values in the widget change we want to update the viewmodel.
@@ -473,8 +473,8 @@ So how does it tell what widget to use for that view? By default it used a namin
 
 In order for all this to work a couple of things need to be true.
 
-* The widget diplaying the viewmodel needs to have its isNavigable property set to true.
-* The widget that is displaying the viewmodel we are navigating to needs to have its _isNavigable property set to true.
+* The widget diplaying the viewmodel needs to have its isNavicable property set to true.
+* The widget that is displaying the viewmodel we are navigating to needs to have its isNavicable property set to true.
 * The viewmodel we are navigating to needs to be registered in the component resolver.
 * The viewmodel and associated route need to be named appropriately or another method of viewmodel resolution needs to be provided.
 
@@ -525,7 +525,7 @@ import 'package:flutter/material.dart';
 
 import 'package:fmvvm/bindings/bindings.dart';
 import 'package:fmvvm/fmvvm.dart';
-import 'package:fmvvm/interfaces/interfaces.dart';
+import 'package:fmvvm/interfaces/interfaces.dart' as fmvvm_interfaces;
 
 void main() => runApp(MyApp());
 
@@ -537,7 +537,7 @@ class MyApp extends StatelessWidget {
 
     componentResolver.registerType<_HomePageViewModel>(() {
       return _HomePageViewModel(
-          componentResolver.resolveType<NavigationService>());
+          componentResolver.resolveType<fmvvm_interfaces.NavigationService>());
     });
     componentResolver.registerType<_CounterViewModel>(() {
       return _CounterViewModel();
@@ -560,7 +560,7 @@ class MyApp extends StatelessWidget {
     if (settings.name == '_HomePageView') {
       var arguments = settings.arguments ??
           Core.componentResolver
-              .resolveType<NavigationService>()
+              .resolveType<fmvvm_interfaces.NavigationService>()
               .createViewModel<_HomePageViewModel>(null);
       return _buildRoute(settings, new _HomePageView(arguments));
     } else if (settings.name == '_CounterView') {
@@ -578,7 +578,7 @@ class MyApp extends StatelessWidget {
 }
 
 class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
-  _HomePageView(ViewModel viewModel, {Key key, this.title})
+  _HomePageView(fmvvm_interfaces.ViewModel viewModel, {Key key, this.title})
       : super(viewModel, key: key);
 
   final String title;
@@ -604,15 +604,15 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
     controller2 = TextEditingController();
     _counterBinding = createBinding(
         viewModel, _HomePageViewModel.counterProperty,
-        bindingDirection: BindingDirection.TwoWay,
+        bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay,
         valueConverter: _NumberValueConverter());
     controller
         .addListener(getTargetValuedTextChanged(_counterBinding, controller));
     _boolBinding = createBinding(viewModel, _HomePageViewModel.testBoolProperty,
-        bindingDirection: BindingDirection.TwoWay);
+        bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay);
     _boolBinding1 = createBinding(
         viewModel, _HomePageViewModel.testBoolProperty,
-        bindingDirection: BindingDirection.TwoWay);
+        bindingDirection: fmvvm_interfaces.BindingDirection.TwoWay);
   }
 
   @override
@@ -702,10 +702,10 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
   }
 }
 
-class _HomePageViewModel extends ViewModel {
+class _HomePageViewModel extends ViewModelBase {
   _HomePageViewModel(this._navigationService);
 
-  final NavigationService _navigationService;
+  final fmvvm_interfaces.NavigationService _navigationService;
 
   static PropertyInfo counterProperty = PropertyInfo('counter', int);
 
@@ -741,7 +741,7 @@ class _HomePageViewModel extends ViewModel {
   }
 }
 
-class _CounterViewModel extends ViewModel {
+class _CounterViewModel extends ViewModelBase {
   @override
   void init(Object parameter) {
     setValue(counterProperty, parameter);
@@ -751,7 +751,7 @@ class _CounterViewModel extends ViewModel {
   int get counter => getValue(counterProperty);
 }
 
-class _NumberValueConverter implements ValueConverter {
+class _NumberValueConverter implements fmvvm_interfaces.ValueConverter {
   Object convert(Object source, Object value) {
     return value.toString();
   }

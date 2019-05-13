@@ -351,11 +351,11 @@ class _ListItem extends BindableBase {
 }
 
 class _NumberValueConverter implements ValueConverter {
-  Object convert(Object source, Object value) {
+  Object convert(Object source, Object value, {Object parameter}) {
     return value.toString();
   }
 
-  Object convertBack(Object source, Object value) {
+  Object convertBack(Object source, Object value, {Object parameter}) {
     return int.tryParse(value) ?? 0;
   }
 }

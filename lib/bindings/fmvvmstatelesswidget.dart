@@ -48,7 +48,8 @@ abstract class FmvvmStatelessWidget<V extends BindableBase>
   /// parameter to one expected by the widget.
   @protected
   Object getValueWithConversion(BindableBase source, Object value,
-      fmvvm_interfaces.ValueConverter valueConverter) {
-    return valueConverter.convert(source, value);
+      fmvvm_interfaces.ValueConverter valueConverter,
+      {Object converterParameter}) {
+    return valueConverter.convert(source, value, parameter: converterParameter);
   }
 }

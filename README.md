@@ -55,17 +55,17 @@ If you want custom versions of the ComponentResolver, ViewLocator or Navigtation
 How to set up what widget is displayed by default for your app is explained in the Navigation section.
 
 ## Viewmodels
-Viewmodels are the primary glue that backs a widget. Viewmodels should inherit from ViewModel.
+Viewmodels are the primary glue that backs a widget. Viewmodels should inherit from ViewModelBase.
 
 ```
 import 'package:fmvvm/bindings/bindings.dart';
 
-class SampleViewModel extends ViewModel {
+class SampleViewModel extends ViewModelBase {
 }
 ```
 
 ### Adding propties
-Properties that can be bound to should use the PropertyInfo object. Any object that inherits from BindableBase, including ViewModel, can create bindable properties.
+Properties that can be bound to should use the PropertyInfo object. Any object that inherits from BindableBase, including ViewModelBase, can create bindable properties.
 
 Creating a new PropertyInfo object should:
 
@@ -195,7 +195,7 @@ var myClass = Core.ComponentResolver.resolve<MyClass>();
 ```
 
 ## Data binding
-Data binding creates a relationship between a class that inherits from BindableBase and a stateful or stateless widget. To be bound to a viewmodel the widget must derive from FmvvmStatefulWidget using a state object the derives from FmvvmState or from FmvvmStatelessWidget.
+Data binding creates a relationship between a class that inherits from BindableBase and a stateful or stateless widget. For the rest of this section we will use the term ViewModel but really it can refer to any class that derives from BindableBase. To be bound to a viewmodel the widget must derive from FmvvmStatefulWidget using a state object the derives from FmvvmState or from FmvvmStatelessWidget.
 
 The widgets can only be bound directly to viewmodel objects and any object that derives from BindableBase it may expose.
 
@@ -211,8 +211,8 @@ class MyStatelessWidget extends FmvvmStatelessWidget<SomeViewModel> {
 }
 ```
 
-__Notice that it is required than an instance of a class that implements viewmodel must be passed to the constructor.__
-__Notive that the second parameter passed to the super contructor defines if this widget is navacable. Pass true for something that is navigated to like a widget that is a page and false for a widget that would be part of a page, like a row in a list.__
+__Notice that it is required than an instance of a class that implements BindableBase must be passed to the constructor.__
+__Notive that the second parameter passed to the super contructor defines if this widget is navagable. Pass true for something that is navigated to like a widget that is a page and false for a widget that would be part of a page, like a row in a list. If the value of isNavagable is true, then the object passed to the constructor muse derive from ViewModel__
 
 Now the build method can be overriden to create the widget interface and used values supplied by the view model.
 
@@ -258,7 +258,7 @@ class MyStatefulWidget extends FmvvmStatefulWidget<MyViewModel> {
 }
 ```
 
-Classes that inherit from FmvvmStatfulWidget should always use a State object that inherits from FmvvmState and pass the viewmodel to the state object.
+Classes that inherit from FmvvmStatfulWidget should always use a State object that inherits from FmvvmState and pass class that derives from BindableBase to the state object.
 
 ```
 @override
@@ -273,7 +273,7 @@ class MyState extends FmvvmState<MyStatefulWidget, MyViewModel> {
 }
 ```
 
-Like the FmvvmStatlessWidget, the second parameter sent to the super class defines if this widget is navigable (like a page) or not (like a widget in a page). Pass true if it is navigable.
+Like the FmvvmStatlessWidget, the second parameter sent to the super class defines if this widget is navicable (like a page) or not (like a widget in a page). Pass true if it is navicable.
 
 #### Bindings on stateful widgets
 This is where things get more complex. With stateful widgets bindings can be bi-directional. That is to say, when values in the viewmodel change we want to update the widget and when values in the widget change we want to update the viewmodel.
@@ -473,8 +473,8 @@ So how does it tell what widget to use for that view? By default it used a namin
 
 In order for all this to work a couple of things need to be true.
 
-* The widget diplaying the viewmodel needs to have its isNavigable property set to true.
-* The widget that is displaying the viewmodel we are navigating to needs to have its _isNavigable property set to true.
+* The widget diplaying the viewmodel needs to have its isNavicable property set to true.
+* The widget that is displaying the viewmodel we are navigating to needs to have its isNavicable property set to true.
 * The viewmodel we are navigating to needs to be registered in the component resolver.
 * The viewmodel and associated route need to be named appropriately or another method of viewmodel resolution needs to be provided.
 
@@ -517,6 +517,115 @@ Navigating back is as simple as calling:
 NaivgationService.navigateBack();
 ```
 
+## Lists
+For two way binding to work correctly there is a class that you can use called NotificationList. For any PropertyInfo object passed to a two way binding that refers to a NotificationList object, not only changes to the pointer to this list will cause the UI to be rebuilt, but items added or removed from the list will be as well.
+
+Here is how to use the notification list in a class:
+
+```
+class _ListViewModel extends ViewModel {
+  _ListViewModel() {
+    myList = NotificationList();
+    myList.add(_ListItem("First", "Item"));
+    myList.add(_ListItem("Second", "Item"));
+  }
+  static PropertyInfo myListProperty = PropertyInfo('myList', NotificationList);
+
+  NotificationList<_ListItem> get myList => getValue(myListProperty);
+  set myList(NotificationList<_ListItem> value) => setValue(myListProperty, value);
+}
+
+class _ListItem extends BindableBase {
+  _ListItem(String lineOne, String lineTwo) {
+    this.lineOne = lineOne;
+    this.lineTwo = lineTwo;
+  }
+  static PropertyInfo lineOneProperty = PropertyInfo('lineOne', String);
+
+  String get lineOne => getValue(lineOneProperty);
+  set lineOne(String value) => setValue(lineOneProperty, value);
+
+  static PropertyInfo lineTwoProperty = PropertyInfo('lineTwo', String);
+
+  String get lineTwo => getValue(lineTwoProperty);
+  set lineTwo(String value) => setValue(lineTwoProperty, value);
+}
+```
+
+Here we have a viewmodel that uses a NotificationList to expose out a bunch of list times.
+
+Now that same list viewmodel may also have a Command like this:
+
+```
+Command get addRow {
+  _addRow ??= Command(() {
+    myList.add(_ListItem("Another", "Item"));
+  });
+  return _addRow;
+}
+```
+
+We can now create a binding to the myList property and then if the addRow Command is called, a new item will be added to the list and the UI will be updated. To do this we can use the following UI code for the list:
+
+```
+class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
+  _RWListState(_ListViewModel viewModel) : super(viewModel, true);
+
+  Binding _listBinding;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _listBinding = createBinding(
+        bindableBase, _ListViewModel.myListProperty,
+        bindingDirection: BindingDirection.TwoWay);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('RW List'),
+      ),
+      body: ListView.builder(
+        shrinkWrap: true,
+        padding: const EdgeInsets.all(20.0),
+        itemCount: (getValue(_listBinding) as NotificationList).length,
+        itemBuilder: (context, position) {
+          return _ListRowWidget((getValue(_listBinding) as NotificationList<_ListItem>)[position]);
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+                    onPressed: () => bindableBase.addRow.execute(),
+                    child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+```
+
+For each line item in the list we are binding to a widget as well and passing in the row class that implements BindableBase. 
+
+```
+class _ListRowWidget extends FmvvmStatelessWidget<_ListItem> {
+  _ListRowWidget(_ListItem bindableBase) : super(bindableBase, false);
+
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    return ListTile(title: Text(bindableBase.lineOne), 
+            subtitle: Text(bindableBase.lineTwo));
+  }
+}
+```
+
+In this case we are using a StatelessWidget so the binding doesn't matter as much. However, if changes could be made to the list items in the model and we wanted that widget to automatically refresh itself, we could have made the widget for the row derive from FmvvmStatefulWidget and bind to the properties on the model to the row.
+
 ## Putting it all together
 Here is a sample app that puts together the concepts we have discussed.
 
@@ -542,6 +651,9 @@ class MyApp extends StatelessWidget {
     componentResolver.registerType<_CounterViewModel>(() {
       return _CounterViewModel();
     });
+    componentResolver.registerType<_ListViewModel>(() {
+      return _ListViewModel();
+    });
   }
 
   @override
@@ -565,6 +677,8 @@ class MyApp extends StatelessWidget {
       return _buildRoute(settings, new _HomePageView(arguments));
     } else if (settings.name == '_CounterView') {
       return _buildRoute(settings, new _CounterView(settings.arguments));
+    } else if (settings.name == '_ListView') {
+      return _buildRoute(settings, new _RWListView(settings.arguments));
     }
     return null;
   }
@@ -584,7 +698,7 @@ class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
   final String title;
 
   @override
-  _HomePageViewState createState() => _HomePageViewState(viewModel);
+  _HomePageViewState createState() => _HomePageViewState(bindableBase);
 }
 
 class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
@@ -603,15 +717,15 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
     controller = TextEditingController();
     controller2 = TextEditingController();
     _counterBinding = createBinding(
-        viewModel, _HomePageViewModel.counterProperty,
+        bindableBase, _HomePageViewModel.counterProperty,
         bindingDirection: BindingDirection.TwoWay,
         valueConverter: _NumberValueConverter());
     controller
         .addListener(getTargetValuedTextChanged(_counterBinding, controller));
-    _boolBinding = createBinding(viewModel, _HomePageViewModel.testBoolProperty,
+    _boolBinding = createBinding(bindableBase, _HomePageViewModel.testBoolProperty,
         bindingDirection: BindingDirection.TwoWay);
     _boolBinding1 = createBinding(
-        viewModel, _HomePageViewModel.testBoolProperty,
+        bindableBase, _HomePageViewModel.testBoolProperty,
         bindingDirection: BindingDirection.TwoWay);
   }
 
@@ -654,17 +768,24 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               onChanged: getOnChanged(_boolBinding1),
             ),
             FlatButton(
-                child: Text(
-                  'Navigate',
-                ),
-                onPressed: () {
-                  viewModel.navigate.execute();
-                }),
+              child: Text(
+                'Go to Count',
+              ),
+              onPressed: () {
+                bindableBase.navigate.execute();
+              }),
+            FlatButton(
+              child: Text(
+                'Go to Read/Write List',
+              ),
+              onPressed: () {
+                bindableBase.goToRWList.execute();
+              }),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: viewModel.incrementCounter.execute,
+        onPressed: bindableBase.incrementCounter.execute,
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
@@ -694,11 +815,72 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
               ),
               Hero(
                 tag: 'countHero',
-                child: Text(getValueWithConversion(viewModel, viewModel.counter, _valueConverter)),
+                child: Text(getValueWithConversion(bindableBase, bindableBase.counter, _valueConverter)),
               ),
             ],
           ),
         ));
+  }
+}
+
+class _RWListView extends FmvvmStatefulWidget<_ListViewModel> {
+  _RWListView(ViewModel viewModel, {Key key, this.title})
+      : super(viewModel, key: key);
+
+  final String title;
+
+  @override
+  _RWListState createState() => _RWListState(bindableBase);
+}
+
+class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
+  _RWListState(_ListViewModel viewModel) : super(viewModel, true);
+
+  Binding _listBinding;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _listBinding = createBinding(
+        bindableBase, _ListViewModel.myListProperty,
+        bindingDirection: BindingDirection.TwoWay);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('RW List'),
+      ),
+      body: ListView.builder(
+        shrinkWrap: true,
+        padding: const EdgeInsets.all(20.0),
+        itemCount: (getValue(_listBinding) as NotificationList).length,
+        itemBuilder: (context, position) {
+          return _ListRowWidget((getValue(_listBinding) as NotificationList<_ListItem>)[position]);
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+                    onPressed: () => bindableBase.addRow.execute(),
+                    child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class _ListRowWidget extends FmvvmStatelessWidget<_ListItem> {
+  _ListRowWidget(_ListItem bindableBase) : super(bindableBase, false);
+
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    return ListTile(title: Text(bindableBase.lineOne), 
+            subtitle: Text(bindableBase.lineTwo));
   }
 }
 
@@ -739,6 +921,15 @@ class _HomePageViewModel extends ViewModel {
     });
     return _navigate;
   }
+
+  Command _goToRWList;
+
+  Command get goToRWList {
+    _goToRWList ??= Command(() {
+      _navigationService.navigate<_ListViewModel>();
+    });
+    return _goToRWList;
+  }
 }
 
 class _CounterViewModel extends ViewModel {
@@ -749,6 +940,43 @@ class _CounterViewModel extends ViewModel {
 
   static PropertyInfo counterProperty = PropertyInfo('counter', int);
   int get counter => getValue(counterProperty);
+}
+
+class _ListViewModel extends ViewModel {
+  _ListViewModel() {
+    myList = NotificationList();
+    myList.add(_ListItem("First", "Item"));
+    myList.add(_ListItem("Second", "Item"));
+  }
+  static PropertyInfo myListProperty = PropertyInfo('myList', NotificationList);
+
+  NotificationList<_ListItem> get myList => getValue(myListProperty);
+  set myList(NotificationList<_ListItem> value) => setValue(myListProperty, value);
+
+  Command _addRow;
+
+  Command get addRow {
+    _addRow ??= Command(() {
+      myList.add(_ListItem("Another", "Item"));
+    });
+    return _addRow;
+  }
+}
+
+class _ListItem extends BindableBase {
+  _ListItem(String lineOne, String lineTwo) {
+    this.lineOne = lineOne;
+    this.lineTwo = lineTwo;
+  }
+  static PropertyInfo lineOneProperty = PropertyInfo('lineOne', String);
+
+  String get lineOne => getValue(lineOneProperty);
+  set lineOne(String value) => setValue(lineOneProperty, value);
+
+  static PropertyInfo lineTwoProperty = PropertyInfo('lineTwo', String);
+
+  String get lineTwo => getValue(lineTwoProperty);
+  set lineTwo(String value) => setValue(lineTwoProperty, value);
 }
 
 class _NumberValueConverter implements ValueConverter {

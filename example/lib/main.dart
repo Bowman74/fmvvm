@@ -19,6 +19,9 @@ class MyApp extends StatelessWidget {
     componentResolver.registerType<_CounterViewModel>(() {
       return _CounterViewModel();
     });
+    componentResolver.registerType<_ListViewModel>(() {
+      return _ListViewModel();
+    });
   }
 
   @override
@@ -42,6 +45,8 @@ class MyApp extends StatelessWidget {
       return _buildRoute(settings, new _HomePageView(arguments));
     } else if (settings.name == '_CounterView') {
       return _buildRoute(settings, new _CounterView(settings.arguments));
+    } else if (settings.name == '_ListView') {
+      return _buildRoute(settings, new _RWListView(settings.arguments));
     }
     return null;
   }
@@ -61,7 +66,7 @@ class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
   final String title;
 
   @override
-  _HomePageViewState createState() => _HomePageViewState(viewModel);
+  _HomePageViewState createState() => _HomePageViewState(bindableBase);
 }
 
 class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
@@ -80,15 +85,16 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
     controller = TextEditingController();
     controller2 = TextEditingController();
     _counterBinding = createBinding(
-        viewModel, _HomePageViewModel.counterProperty,
+        bindableBase, _HomePageViewModel.counterProperty,
         bindingDirection: BindingDirection.TwoWay,
         valueConverter: _NumberValueConverter());
     controller
         .addListener(getTargetValuedTextChanged(_counterBinding, controller));
-    _boolBinding = createBinding(viewModel, _HomePageViewModel.testBoolProperty,
+    _boolBinding = createBinding(
+        bindableBase, _HomePageViewModel.testBoolProperty,
         bindingDirection: BindingDirection.TwoWay);
     _boolBinding1 = createBinding(
-        viewModel, _HomePageViewModel.testBoolProperty,
+        bindableBase, _HomePageViewModel.testBoolProperty,
         bindingDirection: BindingDirection.TwoWay);
   }
 
@@ -132,16 +138,23 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
             ),
             FlatButton(
                 child: Text(
-                  'Navigate',
+                  'Go to Count',
                 ),
                 onPressed: () {
-                  viewModel.navigate.execute();
+                  bindableBase.navigate.execute();
+                }),
+            FlatButton(
+                child: Text(
+                  'Go to Read/Write List',
+                ),
+                onPressed: () {
+                  bindableBase.goToRWList.execute();
                 }),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: viewModel.incrementCounter.execute,
+        onPressed: bindableBase.incrementCounter.execute,
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
@@ -171,11 +184,73 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
               ),
               Hero(
                 tag: 'countHero',
-                child: Text(getValueWithConversion(viewModel, viewModel.counter, _valueConverter)),
+                child: Text(getValueWithConversion(
+                    bindableBase, bindableBase.counter, _valueConverter)),
               ),
             ],
           ),
         ));
+  }
+}
+
+class _RWListView extends FmvvmStatefulWidget<_ListViewModel> {
+  _RWListView(ViewModel viewModel, {Key key, this.title})
+      : super(viewModel, key: key);
+
+  final String title;
+
+  @override
+  _RWListState createState() => _RWListState(bindableBase);
+}
+
+class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
+  _RWListState(_ListViewModel viewModel) : super(viewModel, true);
+
+  Binding _listBinding;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _listBinding = createBinding(bindableBase, _ListViewModel.myListProperty,
+        bindingDirection: BindingDirection.TwoWay);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('RW List'),
+      ),
+      body: ListView.builder(
+        shrinkWrap: true,
+        padding: const EdgeInsets.all(20.0),
+        itemCount: (getValue(_listBinding) as NotificationList).length,
+        itemBuilder: (context, position) {
+          return _ListRowWidget((getValue(_listBinding)
+              as NotificationList<_ListItem>)[position]);
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => bindableBase.addRow.execute(),
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class _ListRowWidget extends FmvvmStatelessWidget<_ListItem> {
+  _ListRowWidget(_ListItem bindableBase) : super(bindableBase, false);
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    return ListTile(
+        title: Text(bindableBase.lineOne),
+        subtitle: Text(bindableBase.lineTwo));
   }
 }
 
@@ -216,6 +291,15 @@ class _HomePageViewModel extends ViewModel {
     });
     return _navigate;
   }
+
+  Command _goToRWList;
+
+  Command get goToRWList {
+    _goToRWList ??= Command(() {
+      _navigationService.navigate<_ListViewModel>();
+    });
+    return _goToRWList;
+  }
 }
 
 class _CounterViewModel extends ViewModel {
@@ -226,6 +310,44 @@ class _CounterViewModel extends ViewModel {
 
   static PropertyInfo counterProperty = PropertyInfo('counter', int);
   int get counter => getValue(counterProperty);
+}
+
+class _ListViewModel extends ViewModel {
+  _ListViewModel() {
+    myList = NotificationList();
+    myList.add(_ListItem("First", "Item"));
+    myList.add(_ListItem("Second", "Item"));
+  }
+  static PropertyInfo myListProperty = PropertyInfo('myList', NotificationList);
+
+  NotificationList<_ListItem> get myList => getValue(myListProperty);
+  set myList(NotificationList<_ListItem> value) =>
+      setValue(myListProperty, value);
+
+  Command _addRow;
+
+  Command get addRow {
+    _addRow ??= Command(() {
+      myList.add(_ListItem("Another", "Item"));
+    });
+    return _addRow;
+  }
+}
+
+class _ListItem extends BindableBase {
+  _ListItem(String lineOne, String lineTwo) {
+    this.lineOne = lineOne;
+    this.lineTwo = lineTwo;
+  }
+  static PropertyInfo lineOneProperty = PropertyInfo('lineOne', String);
+
+  String get lineOne => getValue(lineOneProperty);
+  set lineOne(String value) => setValue(lineOneProperty, value);
+
+  static PropertyInfo lineTwoProperty = PropertyInfo('lineTwo', String);
+
+  String get lineTwo => getValue(lineTwoProperty);
+  set lineTwo(String value) => setValue(lineTwoProperty, value);
 }
 
 class _NumberValueConverter implements ValueConverter {

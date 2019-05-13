@@ -1,6 +1,7 @@
 library fmvvm.bindings;
 
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:fmvvm/interfaces/interfaces.dart' as fmvvm_interfaces;
@@ -18,5 +19,5 @@ part 'navigationservice.dart';
 part 'propertyinfo.dart';
 part 'viewlocator.dart';
 part 'viewmodel.dart';
-part 'viewmodelholder.dart';
-
+part 'bindablebaseholder.dart';
+part 'notificationlist.dart';

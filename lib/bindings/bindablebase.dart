@@ -16,7 +16,7 @@ abstract class BindableBase {
   }
 
   /// Returns the current value for a property.
-  /// 
+  ///
   /// If the property has not been set, the default value will be returned.
   @protected
   Object getValue(PropertyInfo propertyInfo) {
@@ -24,13 +24,13 @@ abstract class BindableBase {
   }
 
   /// Method to call if an element has been changed so any listeners can be notified.
-  /// 
+  ///
   /// Leave the [propertyName] blank to indicate the entire object has changed.
   @protected
   elementChanged(String propertyName) {
     _elementChangedController.add(propertyName);
   }
-  
+
   /// Event raised when an element or the entire object has changed.
   Stream get onChanged => _elementChangedController.stream;
 }

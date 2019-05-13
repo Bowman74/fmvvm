@@ -15,7 +15,7 @@ class FieldData<T> {
   String get name => _name;
 
   /// An id for this FieldData within an instance of a class.
-  /// 
+  ///
   /// This field is normally used by the fmvvm framework.
   int get id => _id;
 

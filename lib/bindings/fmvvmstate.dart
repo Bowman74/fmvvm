@@ -83,7 +83,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends BindableBase>
   /// If the binding direction is OneTime, calls to this method always return
   /// the same value.
   @protected
-  Object getValue(Binding binding) {
+  Object getValue(Binding binding, {Object converterParameter}) {
     Object returnValue;
     if (binding.bindingDirection == BindingDirection.OneTime &&
         !binding.originalValue is _OriginalValueNeverSet) {
@@ -92,10 +92,12 @@ abstract class FmvvmState<T extends StatefulWidget, V extends BindableBase>
       returnValue = binding.source.getValue(binding.sourceProperty);
     } else {
       returnValue = binding.valueConverter.convert(
-          binding.source, binding.source.getValue(binding.sourceProperty));
+          binding.source, binding.source.getValue(binding.sourceProperty),
+          parameter: converterParameter);
     }
 
-    if (binding.originalValue is _OriginalValueNeverSet) {
+    if (binding.originalValue is _OriginalValueNeverSet &&
+        binding.bindingDirection == BindingDirection.OneTime) {
       binding.originalValue = returnValue;
     }
     return returnValue;
@@ -108,13 +110,15 @@ abstract class FmvvmState<T extends StatefulWidget, V extends BindableBase>
   ///
   /// If a ValueConverter was specified for this binding, it will be used.
   @protected
-  void setValue(Binding binding, Object value) {
+  void setValue(Binding binding, Object value, {Object converterParameter}) {
     setState(() {
       if (binding.valueConverter == null) {
         binding.source.setValue(binding.sourceProperty, value);
       } else {
-        binding.source.setValue(binding.sourceProperty,
-            binding.valueConverter.convertBack(binding.source, value));
+        binding.source.setValue(
+            binding.sourceProperty,
+            binding.valueConverter.convertBack(binding.source, value,
+                parameter: converterParameter));
       }
     });
   }
@@ -124,18 +128,23 @@ abstract class FmvvmState<T extends StatefulWidget, V extends BindableBase>
   /// Passes any changes made by the user back to the view model
   @protected
   Function getTargetValuedTextChanged(
-      Binding binding, TextEditingController controller) {
+      Binding binding, TextEditingController controller,
+      {Object converterParameter}) {
     assert(binding.bindingDirection == BindingDirection.TwoWay);
-    return () => {setValue(binding, controller.value.text)};
+    return () => {
+          setValue(binding, controller.value.text,
+              converterParameter: converterParameter)
+        };
   }
 
   /// Returns a funcation that can be used with the OnChanged event on many StatefulWidgets.
   ///
   /// Passes any changes made by the user back to the view model
   @protected
-  Function getOnChanged(Binding binding) {
+  Function getOnChanged(Binding binding, {Object converterParameter}) {
     assert(binding.bindingDirection == BindingDirection.TwoWay);
-    return (Object newValue) => {setValue(binding, newValue)};
+    return (Object newValue) =>
+        {setValue(binding, newValue, converterParameter: converterParameter)};
   }
 
   /// Builds the presentaiton for the widget.

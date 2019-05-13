@@ -1,28 +1,30 @@
 part of fmvvm.bindings;
 
 /// State object to be used with binding for StatefulWidgets.
-/// 
+///
 /// This class must be exended whenever data binding is desired for a StatelfulWidget.
 /// Intended to be used in conjenction with the FmvvmStatefulWidget class.
-abstract class FmvvmState<T extends StatefulWidget, V extends ViewModel> extends State<T>
-    implements ViewModelHolder<V> {
-
+abstract class FmvvmState<T extends StatefulWidget, V extends BindableBase>
+    extends State<T> implements BindableBaseHolder<V> {
   /// Creates the FmvvmState object.
-  /// 
+  ///
   /// [_viewModel] is the view model to be used.
   /// [_isNavigable] should be true if this widget will be treated like a page instead of part
   /// of a page.
   @mustCallSuper
-  FmvvmState(this._viewModel, this._isNavigable);
+  FmvvmState(this._bindableBase, this._isNavigable) {
+    if (_bindableBase is! ViewModel && _isNavigable) {
+      throw ArgumentError("Navigable state objects must be of type ViewModel");
+    }
+  }
 
   final List<Binding> _sourceBindings = List<Binding>();
   final List<StreamSubscription> _subscriptions = List<StreamSubscription>();
 
-
-  V _viewModel;
+  V _bindableBase;
 
   /// The class's viewmodel reference.
-  V get viewModel => _viewModel;
+  V get bindableBase => _bindableBase;
 
   final bool _isNavigable;
 
@@ -37,7 +39,8 @@ abstract class FmvvmState<T extends StatefulWidget, V extends ViewModel> extends
   /// the value for this binding.
   @protected
   Binding createBinding(BindableBase source, PropertyInfo property,
-      {BindingDirection bindingDirection, fmvvm_interfaces.ValueConverter valueConverter}) {
+      {BindingDirection bindingDirection,
+      fmvvm_interfaces.ValueConverter valueConverter}) {
     var binding = Binding(source, property,
         bindingDirection: bindingDirection, valueConverter: valueConverter);
 
@@ -59,14 +62,23 @@ abstract class FmvvmState<T extends StatefulWidget, V extends ViewModel> extends
         }
       });
       _subscriptions.add(subscription);
+
+      if (binding.source.getValue(binding.sourceProperty) is NotificationList) {
+        var notificationList =
+            binding.source.getValue(binding.sourceProperty) as NotificationList;
+        var listSubscription = notificationList.onChanged.listen((fieldName) {
+          setState(() {});
+        });
+        _subscriptions.add(listSubscription);
+      }
     }
     bindings.add(binding);
   }
 
   /// Returns the value for a binding.
-  /// 
+  ///
   /// [binding] - The binding to get the value of.
-  /// 
+  ///
   /// If a ValueConverter was specified for this binding, it will be used.
   /// If the binding direction is OneTime, calls to this method always return
   /// the same value.
@@ -77,11 +89,10 @@ abstract class FmvvmState<T extends StatefulWidget, V extends ViewModel> extends
         !binding.originalValue is _OriginalValueNeverSet) {
       returnValue = binding.originalValue;
     } else if (binding.valueConverter == null) {
-      returnValue =
-          binding.source.getValue(binding.sourceProperty);
+      returnValue = binding.source.getValue(binding.sourceProperty);
     } else {
-      returnValue = binding.valueConverter.convert(binding.source,
-          binding.source.getValue(binding.sourceProperty));
+      returnValue = binding.valueConverter.convert(
+          binding.source, binding.source.getValue(binding.sourceProperty));
     }
 
     if (binding.originalValue is _OriginalValueNeverSet) {
@@ -91,10 +102,10 @@ abstract class FmvvmState<T extends StatefulWidget, V extends ViewModel> extends
   }
 
   /// Sets the value for a binding.
-  /// 
+  ///
   /// [binding] - The binding to set the value for.
   /// [value] - The new value for the property in the BinsableBase object that is bound to.
-  /// 
+  ///
   /// If a ValueConverter was specified for this binding, it will be used.
   @protected
   void setValue(Binding binding, Object value) {
@@ -109,7 +120,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends ViewModel> extends
   }
 
   /// Returns a function that can be used with a TextEditingController's addListener method.
-  /// 
+  ///
   /// Passes any changes made by the user back to the view model
   @protected
   Function getTargetValuedTextChanged(
@@ -119,7 +130,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends ViewModel> extends
   }
 
   /// Returns a funcation that can be used with the OnChanged event on many StatefulWidgets.
-  /// 
+  ///
   /// Passes any changes made by the user back to the view model
   @protected
   Function getOnChanged(Binding binding) {
@@ -128,19 +139,20 @@ abstract class FmvvmState<T extends StatefulWidget, V extends ViewModel> extends
   }
 
   /// Builds the presentaiton for the widget.
-  /// 
+  ///
   /// If this StatefulWidget isNavigatable, the NavigationService's context is set to this context.
   @override
   @mustCallSuper
   Widget build(BuildContext context) {
     if (_isNavigable) {
-      Core.componentResolver.resolveType<NavigationService>().currentContext = context;
+      Core.componentResolver.resolveType<NavigationService>().currentContext =
+          context;
     }
     return null;
   }
 
   /// Called when the state is disposed.
-  /// 
+  ///
   /// All subscriptions for bindings are cancelled.
   @override
   @mustCallSuper

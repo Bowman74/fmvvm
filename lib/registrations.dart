@@ -1,7 +1,7 @@
 part of fmvvm;
 
 /// When fmvvm is instatiated, this class is used to create fmmvm service objects.
-/// 
+///
 /// This class can be extended and any of the methods overridden to provide alternate
 /// implementations. Any class created in such a way should then be passed to the Core.initialize
 /// method.

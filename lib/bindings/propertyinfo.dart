@@ -1,7 +1,7 @@
 part of fmvvm.bindings;
 
 /// Information about a property that can be bound to.
-/// 
+///
 /// These are normally static references within a class that
 /// inherits from BindableBase.
 class PropertyInfo {
@@ -11,7 +11,7 @@ class PropertyInfo {
   int _id = -1;
 
   /// Creates a new instance of PropertyInfo.
-  /// 
+  ///
   /// [_name] - The name of the property, usualle the same as the name of the getter/setter
   /// [_type] - The type of the property.
   /// [defaultValue] - A default value for the property if it has not been set.
@@ -30,13 +30,13 @@ class PropertyInfo {
   }
 
   /// The name of the property.
-  String get name =>  _name;
+  String get name => _name;
 
   /// The type of the property.
   Type get type => _type;
 
   /// A properties default value.
-  /// 
+  ///
   /// Used if the property is called before being explicitly set.
   Object get defaultValue => _defaultValue;
 

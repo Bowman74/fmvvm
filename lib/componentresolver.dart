@@ -36,7 +36,7 @@ class ComponentResolver {
   }
 
   /// Registers an [instance] of an object of the generic type.
-  /// 
+  ///
   /// All calls to resolve based on this type will always return the registered instance.
   /// This in effect creates a singleton.
   void registerInstance<T>(T instance) {
@@ -50,12 +50,12 @@ class ComponentResolver {
   }
 
   /// Registers a type that can be resolved.
-  /// 
+  ///
   /// The [typeCreationFunction] is a reference to a function that should create an
   /// instance of this type.
   void registerType<T>([Function factoryMethod]) {
     ArgumentError.checkNotNull(factoryMethod, "factoryMethod");
-    
+
     if (_dependencyRegistrations
         .any((r) => identical(r.typeRegistered, Utilities.typeOf<T>()))) {
       throw StateError("The same type cannot be registered twice");
@@ -65,17 +65,16 @@ class ComponentResolver {
         factoryMethod: factoryMethod));
   }
 
-  /// This method should be called when using dependency injection frameworks that require a 
+  /// This method should be called when using dependency injection frameworks that require a
   /// completion function to be called after all registrations are complete.
-  void completeRegistration() {
-
-  }
+  void completeRegistration() {}
 
   /// Removes all registrations from the dependency injection container.
   void resetRegistrations() {
     _dependencyRegistrations = List<_DependencyRegistration>();
   }
 }
+
 /// A object that contains information about resolving an dependency.
 class _DependencyRegistration {
   _DependencyRegistration(

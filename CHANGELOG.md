@@ -1,3 +1,10 @@
+## [0.8.3] - 5/14/2019.
+
+* This release adds:
+ 
+- FmvvmApp class for easier bootstrapping of the framework.
+- Fixes to documentation
+
 ## [0.8.2] - 5/13/2019.
 
 * This release adds:

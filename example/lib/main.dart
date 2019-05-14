@@ -6,12 +6,9 @@ import 'package:fmvvm/interfaces/interfaces.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
-  MyApp() {
-    Core.initialize();
-
-    var componentResolver = Core.componentResolver;
-
+class MyApp extends FmvvmApp {
+  @override
+  void registerComponents(ComponentResolver componentResolver) {
     componentResolver.registerType<_HomePageViewModel>(() {
       return _HomePageViewModel(
           componentResolver.resolveType<NavigationService>());
@@ -25,37 +22,29 @@ class MyApp extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'fmvvm Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      initialRoute: '_HomePageView',
-      onGenerateRoute: _getRoute,
-    );
+  String getInitialRoute() {
+    return '_HomePageView';
   }
 
-  Route<dynamic> _getRoute(RouteSettings settings) {
+  @override
+  String getTitle() {
+    return 'fmvvm Demo';
+  }
+
+  @override
+  Route getRoutes(RouteSettings settings) {
     if (settings.name == '_HomePageView') {
       var arguments = settings.arguments ??
           Core.componentResolver
               .resolveType<NavigationService>()
               .createViewModel<_HomePageViewModel>(null);
-      return _buildRoute(settings, new _HomePageView(arguments));
+      return buildRoute(settings, new _HomePageView(arguments));
     } else if (settings.name == '_CounterView') {
-      return _buildRoute(settings, new _CounterView(settings.arguments));
+      return buildRoute(settings, new _CounterView(settings.arguments));
     } else if (settings.name == '_ListView') {
-      return _buildRoute(settings, new _RWListView(settings.arguments));
+      return buildRoute(settings, new _RWListView(settings.arguments));
     }
     return null;
-  }
-
-  MaterialPageRoute _buildRoute(RouteSettings settings, Widget builder) {
-    return new MaterialPageRoute(
-      settings: settings,
-      builder: (ctx) => builder,
-    );
   }
 }
 

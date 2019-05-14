@@ -21,3 +21,4 @@ part 'viewlocator.dart';
 part 'viewmodel.dart';
 part 'bindablebaseholder.dart';
 part 'notificationlist.dart';
+part 'fmvvmapp.dart';

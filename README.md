@@ -11,44 +11,22 @@ The MVVM model (Model - View - ViewModel) pattern is an alternate pattern to MVC
 
 A formal explanation of the MVVM pattern [can be found here](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel).
 
-Implementing the MVVM pattern is about having a formal architecture in your application and separation of concerns. When implementing MVVM in an app I adhere to the following design goals.
+Implementing the MVVM pattern is about having a formal architecture in our applications and separation of concerns. When implementing MVVM in an app I adhere to the following design goals.
 
 * A viewmodel should have no idea how it is presented or have any presentation concepts.
 * Value conversion should be used to convert information in the viewmodel to a format needed by the Widget (view) and potentially back again.
 * Navigation should be done from viewmodel to viewmodel.
 * Viewmodels are primarily what is bound to, but models can be exposed by viewmodels and bound to as well.
-* Dependancy injection can be used to pass required information to a viewmodel.
+* Dependency injection can be used to pass required information to a viewmodel.
 
 # Using fmvvm
 
-## Bootstraping fmvvm
+## Bootstrapping fmvvm
 Bootstrapping fmvvm is pretty easy. To get a reference to fmvvm add the following line to the dependencies section of the pubspec.yaml file:
 
 ```
 fmvvm: ^0.8.2
 ```
-
-Before you start you will want to call Core.Initialize() when creating the app and register any dependencies using the component resolver. By default the NavigationService and ViewLocator are registered with the component resolver.
-
-```
-class MyApp extends StatelessWidget {
-  MyApp() {
-    Core.initialize();
-
-    var componentResolver = Core.componentResolver;
-
-    componentResolver.registerType<MyViewModel>(() {
-      return MyViewModel(
-          componentResolver.resolveType<NavigationService>());
-    });
-    componentResolver.registerType<SomeOtherViewModel>(() {
-      return SomeOtherViewModel();
-    });
-  }
-}
-```
-
-In the above case we have initialized the fmvvm library and registered two viewmodels. The MyViewModel class is also having the NavigationService resolved and passed to it's constructor.
 
 If we need to reference fmvvm components in code, we can use the following import:
 
@@ -56,9 +34,55 @@ If we need to reference fmvvm components in code, we can use the following impor
 import 'package:fmvvm/bindings/fmvvm.dart';
 ```
 
-If we want a custom versions of the ComponentResolver, ViewLocator or NavigtationService we can create our own versions that are returned from a custom Registrations class. An instance of the custom Registrations class is then passed in as a parameter to the initialize method. What each of these classes will be explianed later in the documentation.
+The easiest way to start fmvvm is to extend the fmvvmapp. There are a few things we need to override:
 
-Additionally, how to set up what starting widget is displayed by default for your app is explained in the Navigation section.
+* registerComponents - method to register any dependencies for Inversion of Control / dependency injection.
+* getInitialRoute - the string route name for our app to display by default.
+* getTitle - The title for our app.
+* getRoutes - passes in a string route name and expects a Route to be returned that can be navigated to.
+
+```
+class MyApp extends FmvvmApp {
+  @override
+  void registerComponents(ComponentResolver componentResolver) {
+    componentResolver.registerType<_HomePageViewModel>(() {
+      return _HomePageViewModel(
+          componentResolver.resolveType<NavigationService>());
+    });
+    componentResolver.registerType<_CounterViewModel>(() {
+      return _CounterViewModel();
+    });
+  }
+
+  @override
+  String getInitialRoute() {
+    return '_HomePageView';
+  }
+
+  @override
+  String getTitle() {
+    return 'fmvvm Demo';
+  }
+
+  @override
+  Route getRoutes(RouteSettings settings) {
+    if (settings.name == '_HomePageView') {
+      var arguments = settings.arguments ??
+          Core.componentResolver
+              .resolveType<NavigationService>()
+              .createViewModel<_HomePageViewModel>(null);
+      return buildRoute(settings, new _HomePageView(arguments));
+    } else if (settings.name == '_CounterView') {
+      return buildRoute(settings, new _CounterView(settings.arguments));
+    }
+    return null;
+  }
+}
+```
+
+In the above case we have registered two viewmodels. The MyViewModel class is also having the NavigationService resolved and passed to it's constructor.
+
+If we want a custom versions of the ComponentResolver, ViewLocator or NavigationService we can create our own versions that are returned from a custom Registrations class. An instance of the custom Registrations class is then passed in as a parameter to the constructor of the FmvvmApp class. What each of these classes do will be explained later in the documentation.
 
 ## Viewmodels
 Viewmodels are the primary glue that backs a widget. Viewmodels should inherit from ViewModelBase.
@@ -70,7 +94,7 @@ class SampleViewModel extends ViewModelBase {
 }
 ```
 
-### Adding propties
+### Adding properties
 Properties that can be bound to should use the PropertyInfo object. Any object that inherits from BindableBase, including ViewModelBase, can create bindable properties.
 
 Creating a new PropertyInfo object should:
@@ -132,35 +156,35 @@ Command get DoSomething {
 ```
 
 ### The init function.
-The viewmodel's init method is called after a viewmodel has been instantiated as part of navigaiton, but before it has been passed to a widget. A parameter is sent to this method through viewmodel to viewmodel navigation. If no paramter is sent, it will be null.
+The viewmodel's init method is called after a viewmodel has been instantiated as part of navigation, but before it has been passed to a widget. A parameter is sent to this method through viewmodel to viewmodel navigation. If no parameter is sent, it will be null.
 
-In many cases the init method is used to do any fetches or other data initilization for a viewmodel.
+In many cases the init method is used to do any fetches or other data initialization for a viewmodel.
 
 ```
 @override
 void init(Object parameter) {
-  // Some initilization code for the view model.
+  // Some initialization code for the view model.
 }
 ```
 
 ### Creating a viewmodel in code.
-Viewmodels should not be created directly, instead there is a factory method in the NavigationService. Calling the factorymethod ensures that the init method is also called correctly. In this case the value 5 will be passed to the new viewmodel's init method. 
+Viewmodels should not be created directly, instead there is a factory method in the NavigationService. Calling the factory method ensures that the init method is also called correctly. In this case the value 5 will be passed to the new viewmodel's init method. 
 
 ```
 var _viewModel = navigationService.createViewModel<SomeViewModel>(5);
 ```
 
-__In order for this to work, all viewmodels must be registered with the componenet resolver.__
+__In order for this to work, all viewmodels must be registered with the component resolver.__
 
 ## Models
-Models you want to bind to are written very similarly to ViewModels exept they implement the BindableBase interface instead of ViewModel.
+Models we want to bind to are written very similarly to ViewModels except they implement the BindableBase interface instead of ViewModel.
 
 ```
 class MyModel extends BindableBase {
 }
 ```
 
-Bindalbe properties are created in the same way for models as they are for viewmodels using the PropertyInfo class.
+Bindable properties are created in the same way for models as they are for viewmodels using the PropertyInfo class.
 
 The main difference between a viewmodel and a model that derives from BindableBase is that there is no init method. Models created this way can be instantiated directly using normal means or using the dependency resolver.
 
@@ -169,7 +193,7 @@ While commands are usually not used on models, there is no reason Commands canno
 Models that do not need data binding can be created without extending BindableBase.
 
 ## Component resolver
-The component resolver is a lightweight dependency injection framework. If you wish to use your own dependency injection framework you can by wrapping it in an instace of a class that implements the ComponentResolver interface and pass it into the Core.Initialize method.
+The component resolver is a lightweight dependency injection framework. If we wish to use our own dependency injection framework we can by wrapping it in an instance of a class that implements the ComponentResolver interface and pass it into the Core.Initialize method.
 
 ### Registering components.
 There are two types of registrations that can be done, an instance registration and a type registration.  
@@ -183,7 +207,7 @@ Core.componentResolver.registerInstance<CustomObject>(myObject);
 ```
 
 #### Type registration
-A type registration returns a new instance each time it is called based on the factory method you provide.
+A type registration returns a new instance each time it is called based on the factory method we provide.
 
 ```
 Core.componentResolver.registerType<MyViewModel>(() {
@@ -191,7 +215,7 @@ Core.componentResolver.registerType<MyViewModel>(() {
 });
 ```
 
-The component resolver can also register types that pass in parameters to the constructor that may also be registered with the component resolver. This code would pass the registered instance of the NavigaitonService to the constructor of the MyViewModel class.
+The component resolver can also register types that pass in parameters to the constructor that may also be registered with the component resolver. This code would pass the registered instance of the NavigationService to the constructor of the MyViewModel class.
 
 ```
 Core.componentResolver.registerType<MyViewModel>(() {
@@ -199,10 +223,10 @@ Core.componentResolver.registerType<MyViewModel>(() {
 });
 ```
 
-__Extreme care must be taken when resolving other components within a registerType method. If you make a circular dependancy relationship, you will create a stack overflow situation.__
+__Extreme care must be taken when resolving other components within a registerType method. If we make a circular dependency relationship, we will create a stack overflow situation.__
 
 ### Resolving components
-Components are resolved from the componentResolver by type, either by passing ther type as a parameter or as a generic.
+Components are resolved from the componentResolver by type, either by passing their type as a parameter or as a generic.
 
 #### Passing the type by parameter
 
@@ -234,11 +258,11 @@ class MyStatelessWidget extends FmvvmStatelessWidget<SomeViewModel> {
 ```
 
 __Notice that it is required than an instance of a class that implements BindableBase must be passed to the constructor.__
-__Notice that the second parameter passed to the super's contructor defines if this widget is navagable. Pass true for something that is navigated to like a widget that is a page and false for a widget that would be part of a page, like a row in a list. If the value of isNavagable is true, then the object passed to the constructor must derive from ViewModel__
+__Notice that the second parameter passed to the super's constructor defines if this widget is navigable. Pass true for something that is navigated to like a widget that is a page and false for a widget that would be part of a page, like a row in a list. If the value of isNavigable is true, then the object passed to the constructor must derive from ViewModel__
 
-Now the build method can be overriden to create the widget interface and used values supplied by the view model.
+Now the build method can be overridden to create the widget interface and used values supplied by the view model.
 
-The getValueWithConversion method can be used to pull values out of the viewmodel. To use this method pass it a reference to the view model and the value stored in the property that you want to use.
+The getValueWithConversion method can be used to pull values out of the viewmodel. To use this method pass it a reference to the viewmodel and the value stored in the property that we want to use.
 
 ```
 @override
@@ -262,9 +286,9 @@ Widget build(BuildContext context) {
   }
 ```
 
-__Calling the super.build(context); method is reluired for navigation to work correctly.__
+__Calling the super.build(context); method is required for navigation to work correctly.__
 
-You can also set the value of the Text widget directly to the counter property in the view model, but then you would have to handle any required value conversion manually. More on that later.
+We can also set the value of the Text widget directly to the counter property in the view model, but then we would have to handle any required value conversion manually. More on that later.
 
 ```
 Text(viewModel.counter.toString())
@@ -280,7 +304,7 @@ class MyStatefulWidget extends FmvvmStatefulWidget<MyViewModel> {
 }
 ```
 
-Classes that inherit from FmvvmStatfulWidget should always use a State object that inherits from FmvvmState and pass class that derives from BindableBase to the state object.
+Classes that inherit from FmvvmStatefulWidget should always use a State object that inherits from FmvvmState and pass class that derives from BindableBase to the state object.
 
 ```
 @override
@@ -295,14 +319,14 @@ class MyState extends FmvvmState<MyStatefulWidget, MyViewModel> {
 }
 ```
 
-Like the FmvvmStatlessWidget, the second parameter sent to the super class defines if this widget is navigable (like a page) or not (like a widget in a page). Pass true if it is navigable.
+Like the FmvvmStatelessWidget, the second parameter sent to the super class defines if this widget is navigable (like a page) or not (like a widget in a page). Pass true if it is navigable.
 
 #### Bindings on stateful widgets
 This is where things get more complex. With stateful widgets bindings can be bi-directional. That is to say, when values in the viewmodel change, we want to update the widget and when values in the widget change, we want to update the viewmodel.
 
-Because many of the sub widgets do not have consistent change events or are not persistent, binding is done a little differently than you may have experienced in mvvm frameworks for other platforms.
+Because many of the sub widgets do not have consistent change events or are not persistent, binding is done a little differently than we may have experienced in mvvm frameworks for other platforms.
 
-Inside your State class, create a binding.
+Inside our State class, create a binding.
 
 ```
 Binding _myBinding;
@@ -363,7 +387,7 @@ Switch(
 ),
 ```
 
-Here the value property is set the same as it was for the Text widget, using the getValue method. The getvalue method is for values coming back from the viewmodel to the widget. The onChanged event is for values from the Widget going to the viewModel. Here we use a method called getOnChanged that receives a reference to the binding and sets the value on the viewmodel based on the new value in the widget. If you don't want any changed values in the widget being sent back to the viewmodel, simply don't set the OnChanged even to call the getOnChanged() method.
+Here the value property is set the same as it was for the Text widget, using the getValue method. The getValue method is for values coming back from the viewmodel to the widget. The onChanged event is for values from the Widget going to the viewModel. Here we use a method called getOnChanged that receives a reference to the binding and sets the value on the viewmodel based on the new value in the widget. If we don't want any changed values in the widget being sent back to the viewmodel, simply don't set the OnChanged even to call the getOnChanged() method.
 
 But what about things that use a controller like a TextField?
 
@@ -416,12 +440,12 @@ Widget build(BuildContext context) {
 }
 ```
 
-Another posisbility for the TextField would be to leave the addListener off in the initState method and instead in the build method use the onChanged event of the TextField widget.
+Another possibility for the TextField would be to leave the addListener off in the initState method and instead in the build method use the onChanged event of the TextField widget.
 
 __In order to send widget values back to the viewmodel there needs to be a way, usually an event, that you can use to know the change occurred.__
 
 ### Commands
-Commands are functions that you want to call on your viewmodel. In the viewmodels section we went over how a Command can be set up in a view model. Here is an example of calling that command from a FloatingActionButton widget in the build method.
+Commands are functions that we want to call on our viewmodel. In the viewmodels section we went over how a Command can be set up in a view model. Here is an example of calling that command from a FloatingActionButton widget in the build method.
 
 ```
 floatingActionButton: FloatingActionButton(
@@ -442,7 +466,7 @@ FlatButton(
 In this case the value from a binding would be passed as a parameter to the command.
 
 ### Value conversion
-Many times the shape and type of information stored in your viewmodel may not be in the right format to be directly bound to a widget. Remember, the view model shouldn't know about any views that use it, their capabilities or their shape. So while a viewmodel wouldn't have a property to say if something like a button was enabled, it might have a isValid property and then create a binding to enable/disable a save button based on if the viewmodel's data is valid to save.
+Many times the shape and type of information stored in our viewmodel may not be in the right format to be directly bound to a widget. Remember, the view model shouldn't know about any views that use it, their capabilities or their shape. So while a viewmodel wouldn't have a property to say if something like a button was enabled, it might have a isValid property and then create a binding to enable/disable a save button based on if the viewmodel's data is valid to save.
 
 What does this have to do with value conversion? Simply that it is expected that the value in a viewmodel will not always be in a format needed by the widget for display. Take the following simple example, inside the viewmodel we have a counter property that is implemented as an int but we want to bind that to a Text widget that is expecting a string.
 
@@ -460,7 +484,7 @@ class NumberValueConverter implements ValueConverter {
 }
 ```
 
-The convert function is used by a binding to go from the value in the viewmodel or model to the widget. The convert back method is information coming from the widget back to the view model or model. If this were used on a binding to a TextField and the user entered a 'g' charater, the try parse will fail and a 0 sent to the viewmodel and suddenly the TextField would display a value of 0.
+The convert function is used by a binding to go from the value in the viewmodel or model to the widget. The convert back method is information coming from the widget back to the view model or model. If this were used on a binding to a TextField and the user entered a 'g' character, the try parse will fail and a 0 sent to the viewmodel and suddenly the TextField would display a value of 0.
 
 Value converters are sent to bindings when they are created and used automatically after that on calls to getValue and setValue.
 
@@ -487,47 +511,38 @@ Now these are simple conversions that may have been easier to simply call .toStr
 The final option for value converters is that they can accept an parameter to help in the conversion. The parameter should be sent to the binding using the various getValue and setValue methods on the fmvvmState and fmvvmStatelessWidget classes.
 
 ## Navigation
-fmvvm allows you to do viewmodel to viewmodel navigation. That is to say that when you want to navigate, that is application business logic that should happen in the viewmodel, usually within a command. Since the viewmodel doesn't know anything about the presentation layer, it just states what other viewmodel in the system it wants to navigation to. Fmvvm uses that to figure out what widget to display. Consider the following code:
+fmvvm allows us to do viewmodel to viewmodel navigation. That is to say that when we want to navigate, that is application logic that should happen in the viewmodel, usually within a Command. Since the viewmodel doesn't know anything about the presentation layer, it just states what other viewmodel in the system it wants to navigation to. Fmvvm uses that to figure out what widget to display. Consider the following code:
 
 ```
 navigationService.navigate<SomeOtherViewModel>(parameter: "58");
 ```
 
-In this case the viewmodel will try to navigate to some otehr viewmodel of the type, SomeOtherViewModel. Additionally, a value of "58" will be sent to the SomeOtherViewModel's init method.
+In this case the viewmodel will try to navigate to some other viewmodel of the type, SomeOtherViewModel. Additionally, a value of "58" will be sent to the SomeOtherViewModel's init method.
 
-So how does it tell what widget to use for that view? By default it used a naming convention. It assumes that all viewmodels are named xyzViewModel and its associated widget has a route named xyzView. This default convention to resolve widgets from views can be overriden by creating your own instance of the ViewLocator class and passing it in to the core.initilaze method.
+So how does it tell what widget to use for that view? By default it used a naming convention. It assumes that all viewmodels are named xyzViewModel and its associated widget has a route named xyzView. This default convention to resolve widgets from views can be overridden by creating our own instance of the ViewLocator class and passing it in to the FmvvmApp constructor.
 
 In order for all this to work a couple of things need to be true.
 
-* The widget diplaying the viewmodel needs to have its isNavigable property set to true.
+* The widget displaying the viewmodel needs to have its isNavigable property set to true.
 * The widget that is displaying the viewmodel we are navigating to needs to have its isNavigable property set to true.
 * The viewmodel we are navigating to needs to be registered in the component resolver.
 * The viewmodel and associated route need to be named appropriately or another method of viewmodel resolution needs to be provided.
 
-Here is how those routes can be set up:
+Here is how those routes can be set up in a class that extends FmvvmApp:
 
 ```
-@override
-Widget build(BuildContext context) {
-  return MaterialApp(
-    title: 'fmvvm Demo',
-    theme: ThemeData(
-      primarySwatch: Colors.blue,
-    ),
-    initialRoute: 'HomePageView',
-    onGenerateRoute: _getRoute,
-  );
-}
-
-  Route<dynamic> _getRoute(RouteSettings settings) {
-    if (settings.name == 'HomePageView') {
+  @override
+  Route getRoutes(RouteSettings settings) {
+    if (settings.name == '_HomePageView') {
       var arguments = settings.arguments ??
           Core.componentResolver
               .resolveType<NavigationService>()
-              .createViewModel<HomePageViewModel>(null);
-      return _buildRoute(settings, new HomePageView(arguments));
-    } else if (settings.name == 'SomeOtherView') {
-      return _buildRoute(settings, new SomeOtherView(settings.arguments));
+              .createViewModel<_HomePageViewModel>(null);
+      return buildRoute(settings, new _HomePageView(arguments));
+    } else if (settings.name == '_CounterView') {
+      return buildRoute(settings, new _CounterView(settings.arguments));
+    } else if (settings.name == '_ListView') {
+      return buildRoute(settings, new _RWListView(settings.arguments));
     }
     return null;
   }
@@ -535,16 +550,18 @@ Widget build(BuildContext context) {
 
 A few things to notice, we don't normally do anything to create or pass an instance of the viewmodel to the widget in the route. This is done for us by the NavigationService's navigate method. It is sent with the settings.arguments. The exception to this is the initialRoute, when the app first starts. This isn't navigated to using the NavigationService.navigate method. For this we have to check and see that the settings.arguments are null and if so set it to an instance of the viewmodel using the NavigationService's createViewModel method.
 
+The buildRoute method is provided for us as part of the FmvvmApp base class.
+
 __The NavigationService's navigate method returns a Future so the calling viewmodel can await the navigation operation being completed.__
 
 Navigating back is as simple as calling:
 
 ```
-NaivgationService.navigateBack();
+NavigationService.navigateBack();
 ```
 
 ## Lists
-For two way binding to work correctly there is a class that you can use called NotificationList. For any PropertyInfo object passed to a two way binding that refers to a NotificationList object, not only changes to the pointer to this list will cause the UI to be rebuilt, but items added or removed from the list will cause it as well.
+For two way binding to work correctly there is a class that we can use called NotificationList. For any PropertyInfo object passed to a two way binding that refers to a NotificationList object, not only changes to the pointer to this list will cause the UI to be rebuilt, but items added or removed from the list will cause it as well.
 
 Here is how to use the notification list in a class:
 
@@ -664,12 +681,9 @@ import 'package:fmvvm/interfaces/interfaces.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
-  MyApp() {
-    Core.initialize();
-
-    var componentResolver = Core.componentResolver;
-
+class MyApp extends FmvvmApp {
+  @override
+  void registerComponents(ComponentResolver componentResolver) {
     componentResolver.registerType<_HomePageViewModel>(() {
       return _HomePageViewModel(
           componentResolver.resolveType<NavigationService>());
@@ -683,37 +697,29 @@ class MyApp extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'fmvvm Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      initialRoute: '_HomePageView',
-      onGenerateRoute: _getRoute,
-    );
+  String getInitialRoute() {
+    return '_HomePageView';
   }
 
-  Route<dynamic> _getRoute(RouteSettings settings) {
+  @override
+  String getTitle() {
+    return 'fmvvm Demo';
+  }
+
+  @override
+  Route getRoutes(RouteSettings settings) {
     if (settings.name == '_HomePageView') {
       var arguments = settings.arguments ??
           Core.componentResolver
               .resolveType<NavigationService>()
               .createViewModel<_HomePageViewModel>(null);
-      return _buildRoute(settings, new _HomePageView(arguments));
+      return buildRoute(settings, new _HomePageView(arguments));
     } else if (settings.name == '_CounterView') {
-      return _buildRoute(settings, new _CounterView(settings.arguments));
+      return buildRoute(settings, new _CounterView(settings.arguments));
     } else if (settings.name == '_ListView') {
-      return _buildRoute(settings, new _RWListView(settings.arguments));
+      return buildRoute(settings, new _RWListView(settings.arguments));
     }
     return null;
-  }
-
-  MaterialPageRoute _buildRoute(RouteSettings settings, Widget builder) {
-    return new MaterialPageRoute(
-      settings: settings,
-      builder: (ctx) => builder,
-    );
   }
 }
 

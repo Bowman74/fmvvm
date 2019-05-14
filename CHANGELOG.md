@@ -1,3 +1,9 @@
+## [0.8.4] - 5/14/2019.
+
+* This release adds:
+ 
+- Fix to missing ViewHolder reference in bindings.dart
+
 ## [0.8.3] - 5/14/2019.
 
 * This release adds:

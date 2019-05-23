@@ -63,9 +63,6 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
 
   TextEditingController controller;
   TextEditingController controller2;
-  Binding _counterBinding;
-  Binding _boolBinding;
-  Binding _boolBinding1;
 
   @override
   void initState() {
@@ -73,26 +70,11 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
 
     controller = TextEditingController();
     controller2 = TextEditingController();
-    _counterBinding = createBinding(
-        bindableBase, _HomePageViewModel.counterProperty,
-        bindingDirection: BindingDirection.TwoWay,
-        valueConverter: _NumberValueConverter());
-    controller
-        .addListener(getTargetValuedTextChanged(_counterBinding, controller));
-    _boolBinding = createBinding(
-        bindableBase, _HomePageViewModel.testBoolProperty,
-        bindingDirection: BindingDirection.TwoWay);
-    _boolBinding1 = createBinding(
-        bindableBase, _HomePageViewModel.testBoolProperty,
-        bindingDirection: BindingDirection.TwoWay);
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    controller.text = getValue(_counterBinding);
-    controller2.text = getValue(_counterBinding);
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Counter'),
@@ -104,26 +86,78 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
             Text(
               'You have pushed the button this many times:',
             ),
-            Hero(
-              tag: 'countHero',
-              child: Text(getValue(_counterBinding)),
+            BindingWidget<_HomePageViewModel>(
+              bindings: <Binding>[
+                Binding(
+                    'counter', bindableBase, _HomePageViewModel.counterProperty,
+                    bindingDirection: BindingDirection.TwoWay,
+                    valueConverter: _NumberValueConverter())
+              ],
+              builder: (bc) => Hero(
+                    tag: 'countHero',
+                    child: Text(BindingWidget.of<_HomePageViewModel>(bc)
+                        .getValue('counter')),
+                  ),
             ),
-            TextField(
-              style: Theme.of(context).textTheme.display1,
-              controller: controller,
+            BindingWidget<_HomePageViewModel>(
+                bindings: <Binding>[
+                  Binding('counter', bindableBase,
+                      _HomePageViewModel.counterProperty,
+                      bindingDirection: BindingDirection.TwoWay,
+                      valueConverter: _NumberValueConverter())
+                ],
+                builder: (bc) {
+                  controller.text = BindingWidget.of<_HomePageViewModel>(bc)
+                      .getValue('counter');
+                  return TextField(
+                    style: Theme.of(context).textTheme.display1,
+                    controller: controller,
+                    onChanged: BindingWidget.of<_HomePageViewModel>(bc)
+                        .getOnChanged('counter'),
+                  );
+                }),
+            BindingWidget<_HomePageViewModel>(
+                bindings: <Binding>[
+                  Binding('counter', bindableBase,
+                      _HomePageViewModel.counterProperty,
+                      bindingDirection: BindingDirection.TwoWay,
+                      valueConverter: _NumberValueConverter())
+                ],
+                builder: (bc) {
+                  controller2.text = BindingWidget.of<_HomePageViewModel>(bc)
+                      .getValue('counter');
+                  return TextField(
+                    style: Theme.of(context).textTheme.display1,
+                    controller: controller2,
+                    onChanged: BindingWidget.of<_HomePageViewModel>(bc)
+                        .getOnChanged('counter'),
+                  );
+                }),
+            BindingWidget<_HomePageViewModel>(
+              bindings: <Binding>[
+                Binding('testBool', bindableBase,
+                    _HomePageViewModel.testBoolProperty,
+                    bindingDirection: BindingDirection.TwoWay)
+              ],
+              builder: (c) => Switch(
+                    value: BindingWidget.of<_HomePageViewModel>(c)
+                        .getValue('testBool') as bool,
+                    onChanged: BindingWidget.of<_HomePageViewModel>(c)
+                        .getOnChanged('testBool'),
+                  ),
             ),
-            TextField(
-              style: Theme.of(context).textTheme.display1,
-              controller: controller2,
-              onChanged: getOnChanged(_counterBinding),
-            ),
-            Switch(
-              value: getValue(_boolBinding) as bool,
-              onChanged: getOnChanged(_boolBinding),
-            ),
-            Switch(
-              value: getValue(_boolBinding1) as bool,
-              onChanged: getOnChanged(_boolBinding1),
+            BindingWidget<_HomePageViewModel>(
+              bindings: <Binding>[
+                Binding('testBool', bindableBase,
+                    _HomePageViewModel.testBoolProperty,
+                    bindingDirection: BindingDirection.TwoWay)
+              ],
+              builder: (c) => Switch(
+                    value: BindingWidget.of<_HomePageViewModel>(c)
+                        .getValue('testBool') as bool,
+                    onChanged: BindingWidget.of<_HomePageViewModel>(c)
+                        .getOnChanged('testBool'),
+                  ),
             ),
             FlatButton(
                 child: Text(
@@ -155,8 +189,6 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
   _CounterView(_CounterViewModel viewModel, {Key key})
       : super(viewModel, true, key: key);
 
-  final _NumberValueConverter _valueConverter = _NumberValueConverter();
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -171,10 +203,17 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
               Text(
                 'Counter Value:',
               ),
-              Hero(
-                tag: 'countHero',
-                child: Text(getValueWithConversion(
-                    bindableBase, bindableBase.counter, _valueConverter)),
+              BindingWidget<_CounterViewModel>(
+                bindings: <Binding>[
+                  Binding('counter', bindableBase,
+                      _CounterViewModel.counterProperty,
+                      valueConverter: _NumberValueConverter())
+                ],
+                builder: (bc) => Hero(
+                      tag: 'countHero',
+                      child: Text(BindingWidget.of<_CounterViewModel>(bc)
+                          .getValue('counter')),
+                    ),
               ),
             ],
           ),
@@ -195,14 +234,9 @@ class _RWListView extends FmvvmStatefulWidget<_ListViewModel> {
 class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
   _RWListState(_ListViewModel viewModel) : super(viewModel, true);
 
-  Binding _listBinding;
-
   @override
   void initState() {
     super.initState();
-
-    _listBinding = createBinding(bindableBase, _ListViewModel.myListProperty,
-        bindingDirection: BindingDirection.TwoWay);
   }
 
   @override
@@ -213,14 +247,21 @@ class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
       appBar: AppBar(
         title: Text('RW List'),
       ),
-      body: ListView.builder(
-        shrinkWrap: true,
-        padding: const EdgeInsets.all(20.0),
-        itemCount: (getValue(_listBinding) as NotificationList).length,
-        itemBuilder: (context, position) {
-          return _ListRowWidget((getValue(_listBinding)
-              as NotificationList<_ListItem>)[position]);
-        },
+      body: BindingWidget<_ListViewModel>(
+        bindings: <Binding>[
+          Binding('list', bindableBase, _ListViewModel.myListProperty)
+        ],
+        builder: (bc) => ListView.builder(
+              shrinkWrap: true,
+              padding: const EdgeInsets.all(20.0),
+              itemCount: (BindingWidget.of<_ListViewModel>(bc).getValue('list')
+                      as NotificationList)
+                  .length,
+              itemBuilder: (context, position) {
+                return _ListRowWidget((BindingWidget.of<_ListViewModel>(bc)
+                    .getValue('list') as NotificationList)[position]);
+              },
+            ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => bindableBase.addRow.execute(),

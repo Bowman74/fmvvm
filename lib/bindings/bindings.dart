@@ -23,3 +23,4 @@ part 'bindablebaseholder.dart';
 part 'notificationlist.dart';
 part 'fmvvmapp.dart';
 part 'viewmodelholder.dart';
+part 'bindingwidget.dart';

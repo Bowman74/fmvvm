@@ -39,17 +39,4 @@ abstract class FmvvmStatelessWidget<V extends BindableBase>
     }
     return null;
   }
-
-  /// Returns a value from a BindableBase instance.
-  ///
-  /// [source] - An instance of the BindableBase object to get a value from.
-  /// [value] - The value from the BinbalbeBase object.
-  /// [valueConverter] - A ValueConverter instance to convert the value from the [value]
-  /// parameter to one expected by the widget.
-  @protected
-  Object getValueWithConversion(BindableBase source, Object value,
-      fmvvm_interfaces.ValueConverter valueConverter,
-      {Object converterParameter}) {
-    return valueConverter.convert(source, value, parameter: converterParameter);
-  }
 }

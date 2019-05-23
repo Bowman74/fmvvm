@@ -240,12 +240,8 @@ var myClass = Core.ComponentResolver.resolve(MyClass);
 var myClass = Core.ComponentResolver.resolve<MyClass>();
 ```
 
-## Data binding
-Data binding creates a relationship between a class that inherits from BindableBase and a stateful or stateless widget. For the rest of this section we will use the term ViewModel but really it can refer to any class that derives from BindableBase. To be bound to a viewmodel, the widget must derive from FmvvmStatefulWidget using a state object that derives from FmvvmState or a FmvvmStatelessWidget.
 
-fmvvmStateXXXWidgets can only be bound directly to BindableBase derived objects.
-
-### StatelessWidgets
+## StatelessWidgets
 Stateless widgets cannot change, as such they can only get information out of a viewmodel and do not refresh themselves.
 
 Creating a stateless widget should look like this:
@@ -279,7 +275,7 @@ Widget build(BuildContext context) {
             Text(
               'Counter Value:',
             ),
-            Text(getValueWithConversion(viewModel, viewModel.counter)),
+            Text('look at this later'),
             ],
           ),
         ));
@@ -294,7 +290,7 @@ We can also set the value of the Text widget directly to the counter property in
 Text(viewModel.counter.toString())
 ```
 
-### Stateful widgets
+## Stateful widgets
 Stateful widget should inherit from FmvvmStatefulWidget.
 
 ```
@@ -321,73 +317,65 @@ class MyState extends FmvvmState<MyStatefulWidget, MyViewModel> {
 
 Like the FmvvmStatelessWidget, the second parameter sent to the super class defines if this widget is navigable (like a page) or not (like a widget in a page). Pass true if it is navigable.
 
-#### Bindings on stateful widgets
-This is where things get more complex. With stateful widgets bindings can be bi-directional. That is to say, when values in the viewmodel change, we want to update the widget and when values in the widget change, we want to update the viewmodel.
+## Data binding
+Data binding creates a relationship between a class that inherits from BindableBase and a stateful or stateless widget. For the rest of this section we will use the term ViewModel but really it can refer to any class that derives from BindableBase. Any widget that has a reference to an object that derives from BindingBase can use databinding that the BindingWidget.
 
-Because many of the sub widgets do not have consistent change events or are not persistent, binding is done a little differently than we may have experienced in mvvm frameworks for other platforms.
+### Creating a BindingWidget
+To create bindings we need to use the BindingWidget. The BindingWidget is part of the widget hierarchy. All child widgets are part of its context and when properties of viewmodels bound to within the change, the children are updated through setState.
 
-Inside our State class, create a binding.
-
-```
-Binding _myBinding;
-```
-
-This creates a reference to a persistent binding object. Now we can create an instance of the binding, this is normally done in the initState method.
+A single BindingWidget can contain one or more bindings. Consider the following code inside of a build method.
 
 ```
-@override
-void initState() {
-  super.initState();
-
-  _myBinding = createBinding(
-      viewModel, MyViewModel.someProperty,
-      bindingDirection: BindingDirection.TwoWay);
-}
-```
-
-__Calls to the super class's initState method are required__
-
-Here we create a binding. It gets a reference to the view model and a reference to a static PropertyInfo object that has the information about the property we are bound to.
-
-We have also stated that the binding direction is two way. This will allow changes in the viewmodel's property or the entire viewmodel to call setState() and redraw the widget.
-
-We can also set the binding direction to one time. If set to one time the binding will always return the value that it was when first requested, regardless of any changes that may have happened to the value stored in the viewmodel.
-
-In the build method we can use our binding to give values to some of the widgets we are using.
-
-```
-@override
-Widget build(BuildContext context) {
-  super.build(context);
-
-  return Scaffold(
-    appBar: AppBar(
-      title: Text('Counter'),
+BindingWidget<_HomePageViewModel>(
+  bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay)],
+  builder: (bc) => Hero(
+    tag: 'countHero',
+    child: Text('More on this in a bit'),
     ),
-    body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text('You have pushed the button this many times:'),
-          Text(getValue(_myBinding)),
-          ],
-      ),
-    )
-  );
-}
-```
-In this case we are setting the value of the Text widget to the return value of the getValue method. This method takes a reference to a binding object we created. If it returns the current value for the property stored in the viewmodel, or the first value returned, depends on the binding direction parameter with the binding was created.
-
-That handles getting value changes from the viewmodel to the widget, how about values that change in the widget back to the viewmodel? That gets a little more complicated. Let's look at a Switch.
-
-```
-Switch(
-  value: getValue(_boolBinding) as bool,
-  onChanged: getOnChanged(_boolBinding),
 ),
 ```
 
-Here the value property is set the same as it was for the Text widget, using the getValue method. The getValue method is for values coming back from the viewmodel to the widget. The onChanged event is for values from the Widget going to the viewModel. Here we use a method called getOnChanged that receives a reference to the binding and sets the value on the viewmodel based on the new value in the widget. If we don't want any changed values in the widget being sent back to the viewmodel, simply don't set the OnChanged even to call the getOnChanged() method.
+Here we have a BindingWidget with a generic pointing to the _HomePageViewModel. BindingWidgets are expected only to be bound to a single BindableBase object. All bindings within the BindingWidget should point to that object.
+
+The bindings property is a collection of bindings. Each binding has a key. The key is used to look up bindings when trying to get or set values. This key must be unique within the BindingWidget. This means that the same property on the BindableBase object can be bound to multiple times using different value converters. 
+
+The BindableBase object and the PropertyInfo must also be passed along with the binding. Optionally the binding direction can be set.We have also stated that the binding direction is two way. This will allow changes in the viewmodel's property or the entire viewmodel to call setState() and redraw the BindingWidget at its descendants.
+
+We can also set the binding direction to one time. If set to one time the binding will always return the value that it was when first requested, regardless of any changes that may have happened to the value stored in the viewmodel.
+
+We can also pass a ValueConverter which will be discussed later.
+
+### Getting values from the BindingWidget
+
+We saw how to setup a binding widget, but how do we get information from it. For that we are going to use two methods on the BindingWidget: of and getValue. The of method will find the BindingWidget in the tree and the getValue method will return the value. Here is that same binding code again, but this time we'll be setting the value of the text widget.
+
+```
+BindingWidget<_HomePageViewModel>(
+  bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay, valueConverter: _NumberValueConverter())],
+  builder: (bc) => Hero(
+    tag: 'countHero',
+    child: Text(BindingWidget.of<_HomePageViewModel>(bc).getValue('counter')),
+  ),
+),
+```
+Here the Text widget is a child the BindingWidget. The builder: property provides us with the BuildContext we need to find the BindingWidget. To get a reference to that binding widget from the Text widget we use the .of operator passing in the BindableBase type as a generic and it will find the nearest ancestor BindingWidget using that type. This is why multiple bindings can be specified in a single BindingWidget.
+
+Once we have a reference to that BindingWidget we call getValue. To this method we need to pass in the key to the binding we set up, in this case 'counter'.
+
+### Handling when a widget changes
+That handles getting value changes from the viewmodel to the widget, how about values that change in the widget back to the viewmodel? That gets a little more complicated. Let's look at a Switch.
+
+```
+BindingWidget<_HomePageViewModel>(
+  bindings: <Binding>[Binding('testBool', bindableBase, _HomePageViewModel.testBoolProperty, bindingDirection: BindingDirection.TwoWay)],
+  builder: (c) => Switch(
+    value: BindingWidget.of<_HomePageViewModel>(c).getValue('testBool') as bool,
+    onChanged: BindingWidget.of<_HomePageViewModel>(c).getOnChanged('testBool'),
+  ),
+),
+```
+
+Here the value property is set the same as it was for the Text widget, using the getValue method. The getValue method is for values coming back from the viewmodel to the widget. The onChanged event is for values from the Widget going to the viewModel. Here we use a method called getOnChanged that take a binding key and returns a reference to a function that sets the value on the viewmodel based on the new value in the widget. If we don't want any changed values in the widget being sent back to the viewmodel, simply don't set the OnChanged even to call the getOnChanged() method.
 
 But what about things that use a controller like a TextField?
 
@@ -397,7 +385,7 @@ To do this we first create the controller in the State object.
 TextEditingController _myController;
 ```
 
-Then create an instance of it in the initState method and add a listener to the binding.
+Then create an instance of it in the initState method.
 
 ```
 @override
@@ -405,42 +393,26 @@ void initState() {
   super.initState();
 
   _myController = TextEditingController();
-  _myBinding = createBinding(
-      viewModel, MyViewModel.someProperty,
-      bindingDirection: BindingDirection.TwoWay);
-  _myController.addListener(getTargetValuedTextChanged(_myBinding, _myController));
   }
 ```
 
-Then in the build method:
+Then in the build method we can use our BindingWidget:
 
 ```
-@override
-Widget build(BuildContext context) {
-  super.build(context);
-  myController.text = getValue(_myBinding);
-
-  return Scaffold(
-    appBar: AppBar(
-      title: Text('Counter'),
-    ),
-    body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text('You have pushed the button this many times:'),
-          TextField(
-            style: Theme.of(context).textTheme.display1,
-            controller: controller,
-          ),
-          ],
-      ),
-    )
-  );
-}
+BindingWidget<_HomePageViewModel>(
+  bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay, valueConverter: _NumberValueConverter())],
+  builder: (bc) {
+    controller.text = BindingWidget.of<_HomePageViewModel>(bc).getValue('counter');
+    return TextField(
+      style: Theme.of(context).textTheme.display1,
+      controller: controller,
+      onChanged: BindingWidget.of<_HomePageViewModel>(bc).getOnChanged('counter'),
+    );
+  }
+),
 ```
 
-Another possibility for the TextField would be to leave the addListener off in the initState method and instead in the build method use the onChanged event of the TextField widget.
+Here in our builder property of the BindingWidget we create a function and in that function we can set the text property of the controller. This ensured that the TextField is always in sync with what is in the BindableBase property it is bound to. Then we handle the onChanged event just like we did with the Switch.
 
 __In order to send widget values back to the viewmodel there needs to be a way, usually an event, that you can use to know the change occurred.__
 
@@ -486,29 +458,21 @@ class NumberValueConverter implements ValueConverter {
 
 The convert function is used by a binding to go from the value in the viewmodel or model to the widget. The convert back method is information coming from the widget back to the view model or model. If this were used on a binding to a TextField and the user entered a 'g' character, the try parse will fail and a 0 sent to the viewmodel and suddenly the TextField would display a value of 0.
 
-Value converters are sent to bindings when they are created and used automatically after that on calls to getValue and setValue.
+Value converters are sent to bindings when they are created and used automatically after that on calls to getValue and setValue. 
 
 ```
-@override
-void initState() {
-  super.initState();
-
-  _myBinding = createBinding(
-      viewModel, MyViewModel.someProperty,
-      bindingDirection: BindingDirection.TwoWay,
-      valueConverter: NumberValueConverter());
-}
-```
-
-Value conversion can also be used by FmvvmStatelessWidgets when calling the getValueWithConversion method.
-
-```
-getValueWithConversion(viewModel, viewModel.counter, NumberValueConverter());
+BindingWidget<_HomePageViewModel>(
+  bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay, valueConverter: _NumberValueConverter())],
+  builder: (bc) => Hero(
+    tag: 'countHero',
+    child: ...child widgets...
+    ),
+),
 ```
 
 Now these are simple conversions that may have been easier to simply call .toString(). However, value conversion can be more complex. For example, a isFieldValid method that returns false may text the border color of a Text widget to red if invalid. Converting between those states is what value converters are for.
 
-The final option for value converters is that they can accept an parameter to help in the conversion. The parameter should be sent to the binding using the various getValue and setValue methods on the fmvvmState and fmvvmStatelessWidget classes.
+The final option for value converters is that they can accept an parameter to help in the conversion. The parameter should be sent to the binding using the various getValue and getOnChanged methods on the BindingWidget.
 
 ## Navigation
 fmvvm allows us to do viewmodel to viewmodel navigation. That is to say that when we want to navigate, that is application logic that should happen in the viewmodel, usually within a Command. Since the viewmodel doesn't know anything about the presentation layer, it just states what other viewmodel in the system it wants to navigation to. Fmvvm uses that to figure out what widget to display. Consider the following code:
@@ -611,42 +575,30 @@ Command get addRow {
 We can now create a binding to the myList property and then if the addRow Command is called, a new item will be added to the list and the UI will be updated. To do this we can use the following UI code for the list:
 
 ```
-class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
-  _RWListState(_ListViewModel viewModel) : super(viewModel, true);
+@override
+Widget build(BuildContext context) {
+  super.build(context);
 
-  Binding _listBinding;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _listBinding = createBinding(
-        bindableBase, _ListViewModel.myListProperty,
-        bindingDirection: BindingDirection.TwoWay);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('RW List'),
-      ),
-      body: ListView.builder(
-        shrinkWrap: true,
-        padding: const EdgeInsets.all(20.0),
-        itemCount: (getValue(_listBinding) as NotificationList).length,
-        itemBuilder: (context, position) {
-          return _ListRowWidget((getValue(_listBinding) as NotificationList<_ListItem>)[position]);
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('RW List'),
+    ),
+    body: BindingWidget<_ListViewModel>(
+            bindings: <Binding>[Binding('list', bindableBase, _ListViewModel.myListProperty)],
+            builder: (bc) => ListView.builder(
+              shrinkWrap: true,
+              padding: const EdgeInsets.all(20.0),
+              itemCount: (BindingWidget.of<_ListViewModel>(bc).getValue('list') as NotificationList).length,
+              itemBuilder: (context, position) {
+                return _ListRowWidget((BindingWidget.of<_ListViewModel>(bc).getValue('list') as NotificationList)[position]);
         },
       ),
-      floatingActionButton: FloatingActionButton(
-                    onPressed: () => bindableBase.addRow.execute(),
-                    child: Icon(Icons.add),
-      ),
-    );
-  }
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: () => bindableBase.addRow.execute(),
+      child: Icon(Icons.add),
+    ),
+  );
 }
 ```
 
@@ -667,7 +619,7 @@ class _ListRowWidget extends FmvvmStatelessWidget<_ListItem> {
 }
 ```
 
-In this case we are using a StatelessWidget so the binding doesn't matter as much. However, if changes could be made to the list items in the model and we wanted that widget to automatically refresh itself, we could have made the widget for the row derive from FmvvmStatefulWidget and bind to the properties on the model to the row.
+In this case we are using properties of the BindableBase object directly. However, if changes could be made to the list items in the model and we wanted that widget to automatically refresh itself, we could have used a BindingWidget.
 
 ## Putting it all together
 Here is a sample app that puts together the concepts we have discussed.
@@ -738,9 +690,6 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
 
   TextEditingController controller;
   TextEditingController controller2;
-  Binding _counterBinding;
-  Binding _boolBinding;
-  Binding _boolBinding1;
 
   @override
   void initState() {
@@ -748,26 +697,11 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
 
     controller = TextEditingController();
     controller2 = TextEditingController();
-    _counterBinding = createBinding(
-        bindableBase, _HomePageViewModel.counterProperty,
-        bindingDirection: BindingDirection.TwoWay,
-        valueConverter: _NumberValueConverter());
-    controller
-        .addListener(getTargetValuedTextChanged(_counterBinding, controller));
-    _boolBinding = createBinding(
-        bindableBase, _HomePageViewModel.testBoolProperty,
-        bindingDirection: BindingDirection.TwoWay);
-    _boolBinding1 = createBinding(
-        bindableBase, _HomePageViewModel.testBoolProperty,
-        bindingDirection: BindingDirection.TwoWay);
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    controller.text = getValue(_counterBinding);
-    controller2.text = getValue(_counterBinding);
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Counter'),
@@ -779,26 +713,78 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
             Text(
               'You have pushed the button this many times:',
             ),
-            Hero(
-              tag: 'countHero',
-              child: Text(getValue(_counterBinding)),
+            BindingWidget<_HomePageViewModel>(
+              bindings: <Binding>[
+                Binding(
+                    'counter', bindableBase, _HomePageViewModel.counterProperty,
+                    bindingDirection: BindingDirection.TwoWay,
+                    valueConverter: _NumberValueConverter())
+              ],
+              builder: (bc) => Hero(
+                    tag: 'countHero',
+                    child: Text(BindingWidget.of<_HomePageViewModel>(bc)
+                        .getValue('counter')),
+                  ),
             ),
-            TextField(
-              style: Theme.of(context).textTheme.display1,
-              controller: controller,
+            BindingWidget<_HomePageViewModel>(
+                bindings: <Binding>[
+                  Binding('counter', bindableBase,
+                      _HomePageViewModel.counterProperty,
+                      bindingDirection: BindingDirection.TwoWay,
+                      valueConverter: _NumberValueConverter())
+                ],
+                builder: (bc) {
+                  controller.text = BindingWidget.of<_HomePageViewModel>(bc)
+                      .getValue('counter');
+                  return TextField(
+                    style: Theme.of(context).textTheme.display1,
+                    controller: controller,
+                    onChanged: BindingWidget.of<_HomePageViewModel>(bc)
+                        .getOnChanged('counter'),
+                  );
+                }),
+            BindingWidget<_HomePageViewModel>(
+                bindings: <Binding>[
+                  Binding('counter', bindableBase,
+                      _HomePageViewModel.counterProperty,
+                      bindingDirection: BindingDirection.TwoWay,
+                      valueConverter: _NumberValueConverter())
+                ],
+                builder: (bc) {
+                  controller2.text = BindingWidget.of<_HomePageViewModel>(bc)
+                      .getValue('counter');
+                  return TextField(
+                    style: Theme.of(context).textTheme.display1,
+                    controller: controller2,
+                    onChanged: BindingWidget.of<_HomePageViewModel>(bc)
+                        .getOnChanged('counter'),
+                  );
+                }),
+            BindingWidget<_HomePageViewModel>(
+              bindings: <Binding>[
+                Binding('testBool', bindableBase,
+                    _HomePageViewModel.testBoolProperty,
+                    bindingDirection: BindingDirection.TwoWay)
+              ],
+              builder: (c) => Switch(
+                    value: BindingWidget.of<_HomePageViewModel>(c)
+                        .getValue('testBool') as bool,
+                    onChanged: BindingWidget.of<_HomePageViewModel>(c)
+                        .getOnChanged('testBool'),
+                  ),
             ),
-            TextField(
-              style: Theme.of(context).textTheme.display1,
-              controller: controller2,
-              onChanged: getOnChanged(_counterBinding),
-            ),
-            Switch(
-              value: getValue(_boolBinding) as bool,
-              onChanged: getOnChanged(_boolBinding),
-            ),
-            Switch(
-              value: getValue(_boolBinding1) as bool,
-              onChanged: getOnChanged(_boolBinding1),
+            BindingWidget<_HomePageViewModel>(
+              bindings: <Binding>[
+                Binding('testBool', bindableBase,
+                    _HomePageViewModel.testBoolProperty,
+                    bindingDirection: BindingDirection.TwoWay)
+              ],
+              builder: (c) => Switch(
+                    value: BindingWidget.of<_HomePageViewModel>(c)
+                        .getValue('testBool') as bool,
+                    onChanged: BindingWidget.of<_HomePageViewModel>(c)
+                        .getOnChanged('testBool'),
+                  ),
             ),
             FlatButton(
                 child: Text(
@@ -830,8 +816,6 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
   _CounterView(_CounterViewModel viewModel, {Key key})
       : super(viewModel, true, key: key);
 
-  final _NumberValueConverter _valueConverter = _NumberValueConverter();
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -846,10 +830,17 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
               Text(
                 'Counter Value:',
               ),
-              Hero(
-                tag: 'countHero',
-                child: Text(getValueWithConversion(
-                    bindableBase, bindableBase.counter, _valueConverter)),
+              BindingWidget<_CounterViewModel>(
+                bindings: <Binding>[
+                  Binding('counter', bindableBase,
+                      _CounterViewModel.counterProperty,
+                      valueConverter: _NumberValueConverter())
+                ],
+                builder: (bc) => Hero(
+                      tag: 'countHero',
+                      child: Text(BindingWidget.of<_CounterViewModel>(bc)
+                          .getValue('counter')),
+                    ),
               ),
             ],
           ),
@@ -870,14 +861,9 @@ class _RWListView extends FmvvmStatefulWidget<_ListViewModel> {
 class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
   _RWListState(_ListViewModel viewModel) : super(viewModel, true);
 
-  Binding _listBinding;
-
   @override
   void initState() {
     super.initState();
-
-    _listBinding = createBinding(bindableBase, _ListViewModel.myListProperty,
-        bindingDirection: BindingDirection.TwoWay);
   }
 
   @override
@@ -888,14 +874,21 @@ class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
       appBar: AppBar(
         title: Text('RW List'),
       ),
-      body: ListView.builder(
-        shrinkWrap: true,
-        padding: const EdgeInsets.all(20.0),
-        itemCount: (getValue(_listBinding) as NotificationList).length,
-        itemBuilder: (context, position) {
-          return _ListRowWidget((getValue(_listBinding)
-              as NotificationList<_ListItem>)[position]);
-        },
+      body: BindingWidget<_ListViewModel>(
+        bindings: <Binding>[
+          Binding('list', bindableBase, _ListViewModel.myListProperty)
+        ],
+        builder: (bc) => ListView.builder(
+              shrinkWrap: true,
+              padding: const EdgeInsets.all(20.0),
+              itemCount: (BindingWidget.of<_ListViewModel>(bc).getValue('list')
+                      as NotificationList)
+                  .length,
+              itemBuilder: (context, position) {
+                return _ListRowWidget((BindingWidget.of<_ListViewModel>(bc)
+                    .getValue('list') as NotificationList)[position]);
+              },
+            ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => bindableBase.addRow.execute(),

@@ -1,3 +1,9 @@
+## [0.9.0] - 5/15/2019.
+
+* This release adds:
+ 
+- There is a breaking change for how the data binding works to make it much more inline with Flutter designs. This release has added a new BindingWidget.
+
 ## [0.8.4] - 5/14/2019.
 
 * This release adds:

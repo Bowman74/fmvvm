@@ -4,7 +4,7 @@ part of fmvvm.bindings;
 ///
 /// This item is usually created within a FmvvmState object.
 class Binding {
-  Binding(BindableBase source, PropertyInfo sourceProperty,
+  Binding(String key, BindableBase source, PropertyInfo sourceProperty,
       {BindingDirection bindingDirection,
       fmvvm_interfaces.ValueConverter valueConverter}) {
     this.source = source;
@@ -12,13 +12,18 @@ class Binding {
 
     _bindingDirection = bindingDirection ?? BindingDirection.TwoWay;
     _valueConverter = valueConverter;
+    _key = key;
   }
+
+  String _key;
 
   BindingDirection _bindingDirection;
 
   PropertyInfo _sourceProperty;
 
   fmvvm_interfaces.ValueConverter _valueConverter;
+
+  String get key => _key;
 
   /// The source bindable base object.
   BindableBase source;

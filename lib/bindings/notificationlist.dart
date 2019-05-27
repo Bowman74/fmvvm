@@ -3,18 +3,19 @@ part of fmvvm.bindings;
 class NotificationList<E> extends ListBase<E> implements NotifyChanges {
   StreamController _elementChangedController = StreamController.broadcast();
 
-  final List<E> l = [];
+  List<E> _l = [];
+
   NotificationList();
 
   set length(int newLength) {
-    l.length = newLength;
+    _l.length = newLength;
   }
 
-  int get length => l.length;
+  int get length => _l.length;
 
-  E operator [](int index) => l[index];
+  E operator [](int index) => _l[index];
   void operator []=(int index, E value) {
-    l[index] = value;
+    _l[index] = value;
   }
 
   void add(E element) {
@@ -53,4 +54,48 @@ class NotificationList<E> extends ListBase<E> implements NotifyChanges {
 
   /// Event raised when an element or the entire object has changed.
   Stream get onChanged => _elementChangedController.stream;
+
+  factory NotificationList.filled(int length, E fill, {bool growable = false}) {
+    var returnList = NotificationList<E>();
+
+    returnList._l = List<E>.filled(length, fill, growable: growable);
+    return returnList;
+  }
+
+  factory NotificationList.from(Iterable elements, {bool growable = true}) {
+    var returnList = NotificationList<E>();
+
+    returnList._l = List.from(elements, growable: growable);
+    return returnList;
+  }
+
+  factory NotificationList.of(Iterable<E> elements, {bool growable = true}) =>
+      NotificationList<E>.from(elements, growable: growable);
+
+  factory NotificationList.generate(int length, E generator(int index),
+      {bool growable = true}) {
+    var returnValue = NotificationList<E>();
+
+    returnValue._l = List<E>.generate(length, generator, growable: growable);
+
+    return returnValue;
+  }
+
+  factory NotificationList.unmodifiable(Iterable elements) {
+    var returnList = NotificationList<E>();
+
+    returnList._l = List<E>.unmodifiable(elements);
+    return returnList;
+  }
+
+  static void copyRange<T>(
+      NotificationList<T> target, int at, NotificationList<T> source,
+      [int start, int end]) {
+    List.copyRange(target, at, source);
+  }
+
+  static void writeIterable<T>(
+      NotificationList<T> target, int at, Iterable<T> source) {
+    List.writeIterable(target, at, source);
+  }
 }

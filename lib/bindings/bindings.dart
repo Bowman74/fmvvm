@@ -6,6 +6,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:fmvvm/interfaces/interfaces.dart' as fmvvm_interfaces;
 import 'package:fmvvm/fmvvm.dart';
+import 'dart:core';
 
 part 'bindablebase.dart';
 part 'binding.dart';

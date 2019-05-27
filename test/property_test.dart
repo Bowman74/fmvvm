@@ -23,14 +23,13 @@ void main() {
       }
     }));
 
-
     String _expectedValue = 'foo';
 
     t = new Timer(new Duration(seconds: 3), () {
       fail('event not fired in time');
     });
 
-      testViewModel.stringTest = _expectedValue;
+    testViewModel.stringTest = _expectedValue;
   });
 
   test('string property has correct default value', () {
@@ -65,39 +64,40 @@ void main() {
 }
 
 class _TestViewModel extends BindableBase {
-  
   static PropertyInfo stringTestProperty = PropertyInfo('stringTest', String);
 
   String get stringTest => getValue(stringTestProperty);
   set stringTest(String value) => {
-      setValue(stringTestProperty, value),
-  };
+        setValue(stringTestProperty, value),
+      };
 
   static PropertyInfo intTestProperty = PropertyInfo('intTest', int);
 
   int get intTest => getValue(intTestProperty);
   set intTest(int value) => {
-      setValue(intTestProperty, value),
-    };
+        setValue(intTestProperty, value),
+      };
 
   static PropertyInfo doubleTestProperty = PropertyInfo('doubleTest', double);
 
   double get doubleTest => getValue(doubleTestProperty);
   set doubleTest(double value) => {
-      setValue(doubleTestProperty, value),
-    };
+        setValue(doubleTestProperty, value),
+      };
 
-  static PropertyInfo dateTimeTestProperty = PropertyInfo('dateTimeTest', DateTime);
+  static PropertyInfo dateTimeTestProperty =
+      PropertyInfo('dateTimeTest', DateTime);
 
   DateTime get dateTimeTest => getValue(dateTimeTestProperty);
   set dateTimeTest(DateTime value) => {
-      setValue(dateTimeTestProperty, value),
-    };
+        setValue(dateTimeTestProperty, value),
+      };
 
-  static PropertyInfo referenceTypeTestProperty = PropertyInfo('referenceTypeTest', _TestViewModel);
+  static PropertyInfo referenceTypeTestProperty =
+      PropertyInfo('referenceTypeTest', _TestViewModel);
 
   _TestViewModel get referenceTypeTest => getValue(referenceTypeTestProperty);
   set referenceTypeTest(_TestViewModel value) => {
-      setValue(referenceTypeTestProperty, value),
-    };
+        setValue(referenceTypeTestProperty, value),
+      };
 }

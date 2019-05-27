@@ -1,3 +1,9 @@
+## [0.9.1] - 5/26/2019.
+
+* This release adds:
+ 
+- Factory methods to NotificationList.
+
 ## [0.9.0] - 5/15/2019.
 
 * This release adds:

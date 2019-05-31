@@ -27,7 +27,9 @@ class FieldManager {
   }
 
   FieldData _registerPropertyInfo(PropertyInfo propertyInfo) {
-    propertyInfo._setIdentifier(_fieldDataList.length);
+    if (propertyInfo.id == -1) {
+      propertyInfo._setIdentifier(_fieldDataList.length);
+    }
     var fieldData = propertyInfo.createFieldData();
     _fieldDataList.add(fieldData);
     return fieldData;

@@ -24,6 +24,8 @@ class PropertyInfo {
       _defaultValue = 0.0;
     } else if (defaultValue == null && _type == DateTime) {
       _defaultValue = DateTime.fromMicrosecondsSinceEpoch(0);
+    } else if (defaultValue == null && _type == bool) {
+      _defaultValue = false;
     } else {
       _defaultValue = defaultValue;
     }

@@ -49,8 +49,9 @@ abstract class FmvvmApp extends StatelessWidget {
   /// creates a route.
   ///
   /// This method is usually called within [getRoutes]
-  MaterialPageRoute buildRoute(RouteSettings settings, Widget builder) {
-    return new MaterialPageRoute(
+  MaterialPageRoute buildRoute<R extends Object>(
+      RouteSettings settings, Widget builder) {
+    return new MaterialPageRoute<R>(
       settings: settings,
       builder: (ctx) => builder,
     );

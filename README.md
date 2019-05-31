@@ -432,7 +432,7 @@ Commands can also take parameters. Here is an example using a FlatButton widget.
 ```
 FlatButton(
   child: Text('Navigate'),
-  onPressed: () {viewModel.navigate.execute(getValue(_someBinding));})
+  onPressed: () {viewModel.navigate.execute(BindingWidget.of<_SomeViewModel>(bc).getValue('someBindingName'));})
 ```
 
 In this case the value from a binding would be passed as a parameter to the command.
@@ -478,10 +478,10 @@ The final option for value converters is that they can accept an parameter to he
 fmvvm allows us to do viewmodel to viewmodel navigation. That is to say that when we want to navigate, that is application logic that should happen in the viewmodel, usually within a Command. Since the viewmodel doesn't know anything about the presentation layer, it just states what other viewmodel in the system it wants to navigation to. Fmvvm uses that to figure out what widget to display. Consider the following code:
 
 ```
-navigationService.navigate<SomeOtherViewModel>(parameter: "58");
+navigationService.navigate<Object, SomeOtherViewModel>(parameter: "58");
 ```
 
-In this case the viewmodel will try to navigate to some other viewmodel of the type, SomeOtherViewModel. Additionally, a value of "58" will be sent to the SomeOtherViewModel's init method.
+In this case the viewmodel will try to navigate to some other viewmodel of the type, SomeOtherViewModel. Additionally, a value of "58" will be sent to the SomeOtherViewModel's init method. The first type of the generic
 
 So how does it tell what widget to use for that view? By default it used a naming convention. It assumes that all viewmodels are named xyzViewModel and its associated widget has a route named xyzView. This default convention to resolve widgets from views can be overridden by creating our own instance of the ViewLocator class and passing it in to the FmvvmApp constructor.
 
@@ -523,6 +523,48 @@ Navigating back is as simple as calling:
 ```
 NavigationService.navigateBack();
 ```
+
+### Navigating to a viewmodel for a result
+Fmvvm's navigation service also allows you to navigate to another viewmodel and wait for a result using a Future<T> where T can be any object. There are two methods that can help with this, navigateForResult and navigateBackWithResult.
+
+The navigateForResult method is made from the calling viewmodel and takes an additional generic type to specify a return value. Take the following code:
+
+```
+int someMethod() async {
+  return await _navigationService.navigateForResult<int, SomeOtherViewModel>();
+}
+```
+
+In some method we are using the navigationService to navigate to the SomeOtherViewModel and we expect a result back as an integer. Since the navigateForResult method returns a Promise<R> we and use the async/await operators.
+
+In SomeOtherViewModel we might also have code like this:
+
+```
+Command _navigateBack;
+
+Command get navigateBack {
+  _navigateBack ??= Command(() {
+    _navigationService.navigateBackWithResult(55);
+  });
+  return _navigateBack;
+}
+```
+
+In this case the navigateBack Command would pop the current viewmodel off the stack (SomeOtherViewModel) and return back the value of 55 to the calling view model.
+
+Often there may be a view with a back button or a hardware back button that is pressed on an Android device. To handle this we can use a WillPopScope widget as shown here:
+
+```
+WillPopScope(
+  onWillPop: () async {
+    await bindableBase.navigateBack.execute();
+    return false;
+  },
+  child: ''' Some child widget structure
+),
+```
+
+In this case we use the onWillPop event of the WillPopScope widget to determine that the user pressed the navigation bar back button or a hardware back button. In the event handler we call the navigate back method that in our viewmodel will call navigateBackWithResult. We then return false in the onWillPop event handler because our navigateBack Command already did the back navigation and we don't want to do it again.
 
 ## Lists
 For two way binding to work correctly there is a class that we can use called NotificationList. For any PropertyInfo object passed to a two way binding that refers to a NotificationList object, not only changes to the pointer to this list will cause the UI to be rebuilt, but items added or removed from the list will cause it as well.
@@ -641,7 +683,8 @@ class MyApp extends FmvvmApp {
           componentResolver.resolveType<NavigationService>());
     });
     componentResolver.registerType<_CounterViewModel>(() {
-      return _CounterViewModel();
+      return _CounterViewModel(
+          componentResolver.resolveType<NavigationService>());
     });
     componentResolver.registerType<_ListViewModel>(() {
       return _ListViewModel();
@@ -667,7 +710,7 @@ class MyApp extends FmvvmApp {
               .createViewModel<_HomePageViewModel>(null);
       return buildRoute(settings, new _HomePageView(arguments));
     } else if (settings.name == '_CounterView') {
-      return buildRoute(settings, new _CounterView(settings.arguments));
+      return buildRoute<int>(settings, new _CounterView(settings.arguments));
     } else if (settings.name == '_ListView') {
       return buildRoute(settings, new _RWListView(settings.arguments));
     }
@@ -736,6 +779,8 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                 builder: (bc) {
                   controller.text = BindingWidget.of<_HomePageViewModel>(bc)
                       .getValue('counter');
+                  controller.selection = new TextSelection.collapsed(
+                      offset: controller.text.length);
                   return TextField(
                     style: Theme.of(context).textTheme.display1,
                     controller: controller,
@@ -751,8 +796,11 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                       valueConverter: _NumberValueConverter())
                 ],
                 builder: (bc) {
-                  controller2.text = BindingWidget.of<_HomePageViewModel>(bc)
-                      .getValue('counter');
+                  var controllerText = BindingWidget.of<_HomePageViewModel>(bc)
+                      .getValue('counter') as String;
+                  controller2.text = controllerText;
+                  controller2.selection = new TextSelection.collapsed(
+                      offset: controllerText.length);
                   return TextField(
                     style: Theme.of(context).textTheme.display1,
                     controller: controller2,
@@ -779,19 +827,21 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                     _HomePageViewModel.testBoolProperty,
                     bindingDirection: BindingDirection.TwoWay)
               ],
-              builder: (c) => Switch(
-                    value: BindingWidget.of<_HomePageViewModel>(c)
-                        .getValue('testBool') as bool,
-                    onChanged: BindingWidget.of<_HomePageViewModel>(c)
-                        .getOnChanged('testBool'),
+              builder: (c) => Expanded(
+                    child: Switch(
+                      value: BindingWidget.of<_HomePageViewModel>(c)
+                          .getValue('testBool') as bool,
+                      onChanged: BindingWidget.of<_HomePageViewModel>(c)
+                          .getOnChanged('testBool'),
+                    ),
                   ),
             ),
             FlatButton(
                 child: Text(
-                  'Go to Count',
+                  'Go to Count and add 1',
                 ),
                 onPressed: () {
-                  bindableBase.navigate.execute();
+                  bindableBase.viewValueAddOne.execute();
                 }),
             FlatButton(
                 child: Text(
@@ -807,7 +857,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
         onPressed: bindableBase.incrementCounter.execute,
         tooltip: 'Increment',
         child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
@@ -823,28 +873,33 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
         appBar: AppBar(
           title: Text('Current Count'),
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Counter Value:',
-              ),
-              BindingWidget<_CounterViewModel>(
-                bindings: <Binding>[
-                  Binding('counter', bindableBase,
-                      _CounterViewModel.counterProperty,
-                      valueConverter: _NumberValueConverter())
+        body: WillPopScope(
+            onWillPop: () async {
+              await bindableBase.navigateBack.execute();
+              return false;
+            },
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    'Counter Value:',
+                  ),
+                  BindingWidget<_CounterViewModel>(
+                    bindings: <Binding>[
+                      Binding('counter', bindableBase,
+                          _CounterViewModel.counterProperty,
+                          valueConverter: _NumberValueConverter())
+                    ],
+                    builder: (bc) => Hero(
+                          tag: 'countHero',
+                          child: Text(BindingWidget.of<_CounterViewModel>(bc)
+                              .getValue('counter')),
+                        ),
+                  ),
                 ],
-                builder: (bc) => Hero(
-                      tag: 'countHero',
-                      child: Text(BindingWidget.of<_CounterViewModel>(bc)
-                          .getValue('counter')),
-                    ),
               ),
-            ],
-          ),
-        ));
+            )));
   }
 }
 
@@ -942,9 +997,10 @@ class _HomePageViewModel extends ViewModel {
 
   Command _navigate;
 
-  Command get navigate {
-    _navigate ??= Command(() {
-      _navigationService.navigate<_CounterViewModel>(parameter: counter);
+  Command get viewValueAddOne {
+    _navigate ??= Command(() async {
+      counter = await _navigationService
+          .navigateForResult<int, _CounterViewModel>(parameter: counter);
     });
     return _navigate;
   }
@@ -960,6 +1016,10 @@ class _HomePageViewModel extends ViewModel {
 }
 
 class _CounterViewModel extends ViewModel {
+  _CounterViewModel(this._navigationService);
+
+  final NavigationService _navigationService;
+
   @override
   void init(Object parameter) {
     setValue(counterProperty, parameter);
@@ -967,6 +1027,15 @@ class _CounterViewModel extends ViewModel {
 
   static PropertyInfo counterProperty = PropertyInfo('counter', int);
   int get counter => getValue(counterProperty);
+
+  Command _navigateBack;
+
+  Command get navigateBack {
+    _navigateBack ??= Command(() {
+      _navigationService.navigateBackWithResult(counter + 1);
+    });
+    return _navigateBack;
+  }
 }
 
 class _ListViewModel extends ViewModel {

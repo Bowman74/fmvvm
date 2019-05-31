@@ -14,7 +14,8 @@ class MyApp extends FmvvmApp {
           componentResolver.resolveType<NavigationService>());
     });
     componentResolver.registerType<_CounterViewModel>(() {
-      return _CounterViewModel();
+      return _CounterViewModel(
+          componentResolver.resolveType<NavigationService>());
     });
     componentResolver.registerType<_ListViewModel>(() {
       return _ListViewModel();
@@ -40,7 +41,7 @@ class MyApp extends FmvvmApp {
               .createViewModel<_HomePageViewModel>(null);
       return buildRoute(settings, new _HomePageView(arguments));
     } else if (settings.name == '_CounterView') {
-      return buildRoute(settings, new _CounterView(settings.arguments));
+      return buildRoute<int>(settings, new _CounterView(settings.arguments));
     } else if (settings.name == '_ListView') {
       return buildRoute(settings, new _RWListView(settings.arguments));
     }
@@ -109,6 +110,8 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                 builder: (bc) {
                   controller.text = BindingWidget.of<_HomePageViewModel>(bc)
                       .getValue('counter');
+                  controller.selection = new TextSelection.collapsed(
+                      offset: controller.text.length);
                   return TextField(
                     style: Theme.of(context).textTheme.display1,
                     controller: controller,
@@ -124,8 +127,11 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                       valueConverter: _NumberValueConverter())
                 ],
                 builder: (bc) {
-                  controller2.text = BindingWidget.of<_HomePageViewModel>(bc)
-                      .getValue('counter');
+                  var controllerText = BindingWidget.of<_HomePageViewModel>(bc)
+                      .getValue('counter') as String;
+                  controller2.text = controllerText;
+                  controller2.selection = new TextSelection.collapsed(
+                      offset: controllerText.length);
                   return TextField(
                     style: Theme.of(context).textTheme.display1,
                     controller: controller2,
@@ -152,19 +158,21 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                     _HomePageViewModel.testBoolProperty,
                     bindingDirection: BindingDirection.TwoWay)
               ],
-              builder: (c) => Switch(
-                    value: BindingWidget.of<_HomePageViewModel>(c)
-                        .getValue('testBool') as bool,
-                    onChanged: BindingWidget.of<_HomePageViewModel>(c)
-                        .getOnChanged('testBool'),
+              builder: (c) => Expanded(
+                    child: Switch(
+                      value: BindingWidget.of<_HomePageViewModel>(c)
+                          .getValue('testBool') as bool,
+                      onChanged: BindingWidget.of<_HomePageViewModel>(c)
+                          .getOnChanged('testBool'),
+                    ),
                   ),
             ),
             FlatButton(
                 child: Text(
-                  'Go to Count',
+                  'Go to Count and add 1',
                 ),
                 onPressed: () {
-                  bindableBase.navigate.execute();
+                  bindableBase.viewValueAddOne.execute();
                 }),
             FlatButton(
                 child: Text(
@@ -180,7 +188,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
         onPressed: bindableBase.incrementCounter.execute,
         tooltip: 'Increment',
         child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
@@ -196,28 +204,33 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
         appBar: AppBar(
           title: Text('Current Count'),
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Counter Value:',
-              ),
-              BindingWidget<_CounterViewModel>(
-                bindings: <Binding>[
-                  Binding('counter', bindableBase,
-                      _CounterViewModel.counterProperty,
-                      valueConverter: _NumberValueConverter())
+        body: WillPopScope(
+            onWillPop: () async {
+              await bindableBase.navigateBack.execute();
+              return false;
+            },
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    'Counter Value:',
+                  ),
+                  BindingWidget<_CounterViewModel>(
+                    bindings: <Binding>[
+                      Binding('counter', bindableBase,
+                          _CounterViewModel.counterProperty,
+                          valueConverter: _NumberValueConverter())
+                    ],
+                    builder: (bc) => Hero(
+                          tag: 'countHero',
+                          child: Text(BindingWidget.of<_CounterViewModel>(bc)
+                              .getValue('counter')),
+                        ),
+                  ),
                 ],
-                builder: (bc) => Hero(
-                      tag: 'countHero',
-                      child: Text(BindingWidget.of<_CounterViewModel>(bc)
-                          .getValue('counter')),
-                    ),
               ),
-            ],
-          ),
-        ));
+            )));
   }
 }
 
@@ -315,9 +328,10 @@ class _HomePageViewModel extends ViewModel {
 
   Command _navigate;
 
-  Command get navigate {
-    _navigate ??= Command(() {
-      _navigationService.navigate<_CounterViewModel>(parameter: counter);
+  Command get viewValueAddOne {
+    _navigate ??= Command(() async {
+      counter = await _navigationService
+          .navigateForResult<int, _CounterViewModel>(parameter: counter);
     });
     return _navigate;
   }
@@ -333,6 +347,10 @@ class _HomePageViewModel extends ViewModel {
 }
 
 class _CounterViewModel extends ViewModel {
+  _CounterViewModel(this._navigationService);
+
+  final NavigationService _navigationService;
+
   @override
   void init(Object parameter) {
     setValue(counterProperty, parameter);
@@ -340,6 +358,15 @@ class _CounterViewModel extends ViewModel {
 
   static PropertyInfo counterProperty = PropertyInfo('counter', int);
   int get counter => getValue(counterProperty);
+
+  Command _navigateBack;
+
+  Command get navigateBack {
+    _navigateBack ??= Command(() {
+      _navigationService.navigateBackWithResult(counter + 1);
+    });
+    return _navigateBack;
+  }
 }
 
 class _ListViewModel extends ViewModel {

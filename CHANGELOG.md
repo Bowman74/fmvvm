@@ -1,3 +1,10 @@
+## [0.9.2] - 5/26/2019.
+
+* This release adds:
+ 
+- Correction of FieldManager indexes.
+- Handle setting default of boolean for PropertyInfo
+
 ## [0.9.1] - 5/26/2019.
 
 * This release adds:

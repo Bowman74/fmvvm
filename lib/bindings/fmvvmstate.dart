@@ -32,7 +32,7 @@ abstract class FmvvmState<T extends StatefulWidget, V extends BindableBase>
   @mustCallSuper
   Widget build(BuildContext context) {
     if (_isNavigable) {
-      Core.componentResolver.resolveType<NavigationService>().currentContext =
+      Core.componentResolver.resolveType<NavigationService>().viewContext =
           context;
     }
     return null;

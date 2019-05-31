@@ -120,7 +120,7 @@ set someDateTime(DateTime value) => {
 
 Notice that the name given to the setter and getter is the same as what was used in the creation of the PropertyInfo. This is not required but the name given the PropertyInfo has to be unique for the class for data binding to work correctly.
 
-calling setValue will raise an event if the value did indeed change through the NotifyChanges interface. This is used by data binding.
+Calling setValue will call any listeners if the value did indeed change as it extends the ChangeNotifier class. This is used by data binding.
 
 Read only or set only properties can be created by leaving off the setter or getter respectively.
 
@@ -567,7 +567,7 @@ WillPopScope(
 In this case we use the onWillPop event of the WillPopScope widget to determine that the user pressed the navigation bar back button or a hardware back button. In the event handler we call the navigate back method that in our viewmodel will call navigateBackWithResult. We then return false in the onWillPop event handler because our navigateBack Command already did the back navigation and we don't want to do it again.
 
 ## Lists
-For two way binding to work correctly there is a class that we can use called NotificationList. For any PropertyInfo object passed to a two way binding that refers to a NotificationList object, not only changes to the pointer to this list will cause the UI to be rebuilt, but items added or removed from the list will cause it as well.
+For two way binding to work correctly there is a class that we can use called NotificationList. For any PropertyInfo object passed to a two way binding that refers to a NotificationList object, not only changes to the pointer to this list will cause the UI to be rebuilt, but items added or removed from the list will cause it as well. This is because the NotificationList uses the ChangeNotifier class as a mixin and notifyListeners() is called when items are added or removed from the list.
 
 Here is how to use the notification list in a class:
 

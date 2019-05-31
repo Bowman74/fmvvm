@@ -12,12 +12,31 @@ void main() {
     expect(testViewModel.stringTest, _expectedValue);
   });
 
-  test('ensures onChanged raised correctly', () {
+  test('ensures property listener called correctly', () {
     final testViewModel = _TestViewModel();
     Timer t;
 
-    testViewModel.onChanged.first.then(expectAsync1((e) {
+    testViewModel.addPropertyListener(expectAsync1((e) {
       expect(e, equals("stringTest"));
+      if (t != null) {
+        t.cancel();
+      }
+    }));
+
+    String _expectedValue = 'foo';
+
+    t = new Timer(new Duration(seconds: 3), () {
+      fail('event not fired in time');
+    });
+
+    testViewModel.stringTest = _expectedValue;
+  });
+
+  test('ensures normal listener called correctly', () {
+    final testViewModel = _TestViewModel();
+    Timer t;
+
+    testViewModel.addListener(expectAsync0(() {
       if (t != null) {
         t.cancel();
       }

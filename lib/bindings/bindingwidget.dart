@@ -92,7 +92,7 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
 /// A state object for use internally by fmvvm for BindingWidgets.
 class _BindingWidgetState<T> extends State<BindingWidget> {
   final List<Binding> _sourceBindings;
-  final List<StreamSubscription> _subscriptions = List<StreamSubscription>();
+  final List<_BindingListener> _bindingListeners = List<_BindingListener>();
 
   _BindingWidgetState(this._sourceBindings) {
     var addedListeners = List<BindableBase>();
@@ -102,9 +102,12 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
     });
   }
 
+  /// Creates a property listenter for a binding.
+  ///
+  /// If the binding is to a notification list, a listener is added to that as well.
   void _createListener(Binding binding, List<BindableBase> addedListeners) {
     if (!addedListeners.any((b) => b == binding.source)) {
-      var subscription = binding.source.onChanged.listen((fieldName) {
+      var propertyListener = (String fieldName) {
         if (binding.bindingDirection == BindingDirection.TwoWay &&
             (fieldName == "" ||
                 _sourceBindings.any((b) =>
@@ -112,22 +115,32 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
                     b.source == binding.source))) {
           setState(() {});
         }
-      });
-      _subscriptions.add(subscription);
+      };
+
+      binding.source.addPropertyListener(propertyListener);
+      _bindingListeners.add(_BindingListener()
+        ..bindingKey = binding.key
+        ..listener = propertyListener
+        ..isListListener = false);
 
       if (binding.source.getValue(binding.sourceProperty) is NotificationList) {
         var notificationList =
             binding.source.getValue(binding.sourceProperty) as NotificationList;
-        var listSubscription = notificationList.onChanged.listen((fieldName) {
+        var listListener = () {
           setState(() {});
-        });
-        _subscriptions.add(listSubscription);
+        };
+        notificationList.addListener(listListener);
+        _bindingListeners.add(_BindingListener()
+          ..bindingKey = binding.key
+          ..listener = listListener
+          ..isListListener = true);
       }
     }
     addedListeners.add(binding.source);
   }
 
   @override
+  @mustCallSuper
   Widget build(BuildContext context) {
     return _BindingContext(widget.builder);
   }
@@ -138,7 +151,17 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
   @override
   @mustCallSuper
   void dispose() {
-    _subscriptions?.forEach((StreamSubscription s) => {s.cancel()});
+    _bindingListeners.forEach((bl) {
+      var binding =
+          _sourceBindings.singleWhere((sb) => sb.key == bl.bindingKey);
+      if (bl.isListListener) {
+        var notificationList =
+            binding.source.getValue(binding.sourceProperty) as NotificationList;
+        notificationList.removeListener(bl.listener);
+      } else {
+        binding.source.removePropertyListener(bl.listener);
+      }
+    });
     super.dispose();
   }
 }
@@ -153,4 +176,11 @@ class _BindingContext extends StatelessWidget {
   Widget build(BuildContext context) {
     return builder(context);
   }
+}
+
+/// A class used to track listeners so they can be removed as part of the dispose method.
+class _BindingListener {
+  bool isListListener;
+  Object listener;
+  String bindingKey;
 }

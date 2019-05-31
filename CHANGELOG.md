@@ -1,3 +1,11 @@
+## [0.9.3] - 5/31/2019.
+
+* This release adds:
+ 
+- #7 The NavigationService can now navigate to another viewmodel to get a return value.
+
+- #8 Breaking change, changes to fields and elements in a NotificationList now use the more standard Listenable class.
+
 ## [0.9.2] - 5/26/2019.
 
 * This release adds:
@@ -35,7 +43,7 @@
 * This release adds:
  
 - Tweaks to the documentation
-- The ability to specifiy and send a parameter to a value converter
+- The ability to specifically and send a parameter to a value converter
 
 ## [0.8.1] - 5/12/2019.
 

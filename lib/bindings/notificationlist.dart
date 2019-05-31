@@ -1,8 +1,9 @@
 part of fmvvm.bindings;
 
-class NotificationList<E> extends ListBase<E> implements NotifyChanges {
-  StreamController _elementChangedController = StreamController.broadcast();
-
+/// The NotificationList extends a normal list base and adds a ChangeNotifier
+///
+/// notifyListeners is called when any items are added or removed from the list.
+class NotificationList<E> extends ListBase<E> with ChangeNotifier {
   List<E> _l = [];
 
   NotificationList();
@@ -20,40 +21,29 @@ class NotificationList<E> extends ListBase<E> implements NotifyChanges {
 
   void add(E element) {
     super.add(element);
-    elementChanged("");
+    notifyListeners();
   }
 
   void addAll(Iterable<E> iterable) {
     super.addAll(iterable);
-    elementChanged("");
+    notifyListeners();
   }
 
   bool remove(Object element) {
     var returnValue = super.remove(element);
-    elementChanged("");
+    notifyListeners();
     return returnValue;
   }
 
   void removeWhere(bool test(E element)) {
     super.removeWhere(test);
-    elementChanged("");
+    notifyListeners();
   }
 
   void retainWhere(bool test(E element)) {
     super.retainWhere(test);
-    elementChanged("");
+    notifyListeners();
   }
-
-  /// Method to call if an element has been changed so any listeners can be notified.
-  ///
-  /// Leave the [propertyName] blank to indicate the entire object has changed.
-  @protected
-  elementChanged(String propertyName) {
-    _elementChangedController.add(propertyName);
-  }
-
-  /// Event raised when an element or the entire object has changed.
-  Stream get onChanged => _elementChangedController.stream;
 
   factory NotificationList.filled(int length, E fill, {bool growable = false}) {
     var returnList = NotificationList<E>();

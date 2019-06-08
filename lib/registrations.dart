@@ -20,4 +20,9 @@ class Registrations {
   ViewLocator getViewLocator() {
     return FmvvmViewLocator();
   }
+
+  /// Returns a reference to the MessageService to be used by fmvvm.
+  MessageService getMessageService() {
+    return FmvvmMessageService();
+  }
 }

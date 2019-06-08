@@ -37,7 +37,9 @@ abstract class NavigationService {
   /// starting widget.
   ViewModel createViewModel<T extends ViewModel>(Object parameter);
 
-  /// The current context. This method is called by default when a widget defined as a page
-  /// has been shown.
-  set viewContext(BuildContext context);
+  /// Any initiliazation needed to be done by the messenger service.
+  ///
+  /// This is called once when fmvvm is initialized. fmvvm uses a single
+  /// instance of the navigaiton service throughout the app.
+  void initialize();
 }

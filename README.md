@@ -104,7 +104,7 @@ Properties that can be bound to should use the PropertyInfo object. Any object t
 
 Creating a new PropertyInfo object should:
 
--   Give a name to the propety that matches the getter and setter
+-   Give a name to the property that matches the getter and setter
 -   Be static.
 -   Define the type of the property.
 -   Be 'public' so they can be used in data binding.
@@ -296,7 +296,7 @@ Widget build(BuildContext context) {
   }
 ```
 
-**Calling the super.build(context); method is required for navigation to work correctly.**
+**Calling the super.build(context); method is required.**
 
 We can also set the value of the Text widget directly to the counter property in the view model, but then we would have to handle any required value conversion manually. More on that later.
 
@@ -686,6 +686,97 @@ class _ListRowWidget extends FmvvmStatelessWidget<_ListItem> {
 ```
 
 In this case we are using properties of the BindableBase object directly. However, if changes could be made to the list items in the model and we wanted that widget to automatically refresh itself, we could have used a BindingWidget.
+
+## MessageService
+
+The MessageService allows the application to be decoupled by providing a mechanism for the publish / subscribe pattern. Any object in the system can send a message to the MessageService with a parameter and not know or care who might be interested in receiving it.
+
+### Getting access to the message service
+
+The MessageService is by default added to the fmvvm inversion of control container. The easiest way to get a reference to it is to inject it into a class.
+
+```
+class SomeViewModel extends ViewModel {
+  SomeViewModel(this._messageService);
+
+  final MessageService _messageService;
+}
+```
+
+Then to register this view model:
+
+```
+componentResolver.registerType<_CounterViewModel>(() {
+    return SomeViewModel(
+      componentResolver.resolveType<MessageService>());
+  });
+```
+
+### Subscribing to receive messages
+
+Messages have a name and to listen for messages with a given name we must first create a subscription object. A subscription object has two parts: the name to listed for and a method to call when a message with that name is sent.
+
+Consider the following code to create a subscription object:
+
+```
+var subscription = Subscription("SomeMessageName", ((p) {
+      /// do some stuff when the message is received.
+      /// p is the parameter sent with the message.
+    }));
+```
+
+Then to register the subscription.
+
+```
+_messageService.subscribe(subscription);
+```
+
+** 0-n different subscriptions can be added for the same message name. **
+
+### Removing a subscription
+
+It is common to need to remove subscriptions so that messages don't keep coming to object and viewmodels that are not being used any more. To remove a single subscription a reference to the subscription object needs to be maintained and sent to the unsubscribe method.
+
+```
+_messageService.unsubscribe(subscription);
+```
+
+All subscriptions that are currently in effect, including system registrations, can be removed with clearAllSubscriptions().
+
+```
+_messageService.clearAllSubscriptions();
+```
+
+### Publishing a message
+
+The first step to send a message is to create a Message object. A Message object has two parts, a name of the subscription and a parameter to send with the message.
+
+```
+var message = Message("SomeMessageName", parameter);
+```
+
+**The parameter can be any object that you want to send along with the message**
+
+To send the message call the publish method passing the message object. If there are no subscribers for the name of the message being sent then nothing will happen. There could be many subscribers as well and each will be sent the message in turn. There is no way to control the order in which multiple subscribers listening for the same message will receive the message.
+
+```
+_messageService.publish(message);
+```
+
+### Standard message
+There is one message that gets sent by default by fmvvm. Any objects that derive from FmvvmStatelessWidget or fmvvmState will publish a message when the build method is called when the isNavigable parameter is set to true. The name of the message will be Constants.newBuildContext and the parameter will be the BuildContext.
+
+To listen for the current context, create a subscription and add it to the messageService.
+
+```
+var subscription = Subscription(Constants.newBuildContext, ((p) {
+      /// p will contain the buildContext
+  }));
+
+_messageService.subscribe(subscription);
+```
+
+**This is a great way that things like viewmodels who may want to show an alert can get the current page's buildContext.**
 
 ## Putting it all together
 

@@ -3,6 +3,7 @@ part of fmvvm;
 /// Default implementation of the fmvvm NavigationService interface.
 class FmvvmNavigationService implements NavigationService {
   BuildContext _viewContext;
+  Subscription _subscription;
 
   /// Navigates to a new viewmodel of the type specified by the generic.
   ///
@@ -30,6 +31,17 @@ class FmvvmNavigationService implements NavigationService {
     return returnValue;
   }
 
+  @override
+  void initialize() {
+    var messageService = Core.componentResolver.resolveType<MessageService>();
+
+    _subscription = Subscription(Constants.newBuildContext, (c) {
+      _viewContext = c;
+    });
+
+    messageService.subscribe(_subscription);
+  }
+
   /// Pops the current view / viewmodel off the stack and goes to the previous one.
   void navigateBack() {
     Navigator.of(_viewContext).pop();
@@ -49,11 +61,5 @@ class FmvvmNavigationService implements NavigationService {
     ViewModel _viewModel = Core.componentResolver.resolveType<T>();
     _viewModel.init(parameter);
     return _viewModel;
-  }
-
-  /// The current context. This method is called by default when a widget defined as a page
-  /// has been shown.
-  set viewContext(BuildContext context) {
-    _viewContext = context;
   }
 }

@@ -1,3 +1,10 @@
+## [0.9.5] - 6/7/2019.
+
+* This release adds:
+ 
+- #18 Call dispose on ViewModel objects popped off the stack..
+- Added navigateAndRemoveCurrent to NavigationService
+
 ## [0.9.4] - 6/7/2019.
 
 * This release adds:

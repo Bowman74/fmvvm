@@ -28,7 +28,7 @@ Implementing the MVVM pattern is about having a formal architecture in our appli
 Bootstrapping fmvvm is pretty easy. To get a reference to fmvvm add the following line to the dependencies section of the pubspec.yaml file:
 
 ```
-fmvvm: ^0.9.3
+fmvvm: ^0.9.5
 ```
 
 If we need to reference fmvvm components in code, we can use the following import:

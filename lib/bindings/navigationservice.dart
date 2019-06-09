@@ -29,6 +29,13 @@ abstract class NavigationService {
   /// This should be used in conjunction with navigateForResult.
   void navigateBackWithResult<R extends Object>([R parameter]);
 
+  /// Navigates to a new view modeland removed the calling viewmodel from the stack.
+  ///
+  /// The [parameter] is a value that will be passed to the new viewmodel's
+  /// init method. The Future will be resolved with the ViewModel that is navigated to is
+  /// popped from the stack.
+  void navigateAndRemoveCurrent<V extends ViewModel>({Object parameter});
+
   /// Creates a view model of a specified type.
   ///
   /// The [parameter] is a value that will be passed to the new viewmodel's

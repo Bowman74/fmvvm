@@ -43,7 +43,7 @@ class FmvvmMessageService extends MessageService {
       var messenger =
           _messengers.singleWhere((m) => m.name == subscription.name);
 
-      messenger.streamController.stream.listen(subscription.messageHandler);
+      messenger.streamController.stream.asBroadcastStream().listen(subscription.messageHandler);
     }
   }
 
@@ -83,7 +83,7 @@ class _Messenger {
   _Messenger(String name) {
     this.name = name;
   }
-  StreamController _streamController = StreamController();
+  StreamController _streamController = StreamController.broadcast();
 
   String name;
 

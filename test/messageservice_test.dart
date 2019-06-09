@@ -84,4 +84,38 @@ void main() {
 
     messageService.publish(message);
   });
+  
+    test('Receive multiple subscriptions', () {
+    var messageName = "testMessage";
+    var messageService = FmvvmMessageService();
+    var expectedMessage = "This is the message";
+
+    Timer t;
+
+    var subscription1 = Subscription(messageName, expectAsync1((e) {
+      expect(e, equals(expectedMessage));
+      if (t != null) {
+        t.cancel();
+      }
+    }));
+
+    messageService.subscribe(subscription1);
+
+    var subscription2 = Subscription(messageName, expectAsync1((e) {
+      expect(e, equals(expectedMessage));
+      if (t != null) {
+        t.cancel();
+      }
+    }));
+
+    messageService.subscribe(subscription2);
+
+    var message = Message(messageName, expectedMessage);
+
+    t = new Timer(new Duration(seconds: 3), () {
+      fail('event not fired in time');
+    });
+
+    messageService.publish(message);
+  });
 }

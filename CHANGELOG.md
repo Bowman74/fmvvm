@@ -1,3 +1,9 @@
+## [0.9.6] - 6/8/2019.
+
+* This release adds:
+ 
+- #19 Corrected but with MessageService where it would only allow one subscription.
+
 ## [0.9.5] - 6/7/2019.
 
 * This release adds:

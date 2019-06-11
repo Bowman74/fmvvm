@@ -44,7 +44,7 @@ The easiest way to start fmvvm is to extend the fmvvmapp. There are a few things
 -   getTitle - The title for our app.
 -   getRoutes - passes in a string route name and expects a Route to be returned that can be navigated to.
 
-```
+```dart
 class MyApp extends FmvvmApp {
   @override
   void registerComponents(ComponentResolver componentResolver) {
@@ -91,7 +91,7 @@ If we want a custom versions of the ComponentResolver, ViewLocator or Navigation
 
 Viewmodels are the primary glue that backs a widget. Viewmodels should inherit from ViewModelBase.
 
-```
+```dart
 import 'package:fmvvm/bindings/fmvvm.dart';
 
 class SampleViewModel extends ViewModelBase {
@@ -109,13 +109,13 @@ Creating a new PropertyInfo object should:
 -   Define the type of the property.
 -   Be 'public' so they can be used in data binding.
 
-```
+```dart
 static PropertyInfo someDateTimeProperty = PropertyInfo('someDateTime', DateTime);
 ```
 
 Then a setter and/or getter can be created.
 
-```
+```dart
 DateTime get someDateTime => getValue(someDateTimeProperty);
 set someDateTime(DateTime value) => {
       setValue(someDateTimeProperty, value),
@@ -137,7 +137,7 @@ Currently commands are fire and forget, that is to say they do not return a futu
 
 Here is how a command can be created on a viewmodel that takes no parameters.
 
-```
+```dart
 Command _doSomethingCommand;
 
 Command get DoSomething {
@@ -150,7 +150,7 @@ Command get DoSomething {
 
 A command that takes a parameter would be defined as:
 
-```
+```dart
 Command _doSomethingCommand;
 
 Command get DoSomething {
@@ -167,7 +167,7 @@ The viewmodel's init method is called after a viewmodel has been instantiated as
 
 In many cases the init method is used to do any fetches or other data initialization for a viewmodel.
 
-```
+```dart
 @override
 void init(Object parameter) {
   // Some initialization code for the view model.
@@ -178,7 +178,7 @@ void init(Object parameter) {
 
 Viewmodels should not be created directly, instead there is a factory method in the NavigationService. Calling the factory method ensures that the init method is also called correctly. In this case the value 5 will be passed to the new viewmodel's init method.
 
-```
+```dart
 var _viewModel = navigationService.createViewModel<SomeViewModel>(5);
 ```
 
@@ -188,7 +188,7 @@ var _viewModel = navigationService.createViewModel<SomeViewModel>(5);
 
 Models we want to bind to are written very similarly to ViewModels except they implement the BindableBase interface instead of ViewModel.
 
-```
+```dart
 class MyModel extends BindableBase {
 }
 ```
@@ -213,7 +213,7 @@ There are two types of registrations that can be done, an instance registration 
 
 An instance registration returns the same instance of the object each and every time it is called. This creates the equivalent of a singleton.
 
-```
+```dart
 var myObject = CustomObject();
 Core.componentResolver.registerInstance<CustomObject>(myObject);
 ```
@@ -222,7 +222,7 @@ Core.componentResolver.registerInstance<CustomObject>(myObject);
 
 A type registration returns a new instance each time it is called based on the factory method we provide.
 
-```
+```dart
 Core.componentResolver.registerType<MyViewModel>(() {
   return MyViewModel();
 });
@@ -230,7 +230,7 @@ Core.componentResolver.registerType<MyViewModel>(() {
 
 The component resolver can also register types that pass in parameters to the constructor that may also be registered with the component resolver. This code would pass the registered instance of the NavigationService to the constructor of the MyViewModel class.
 
-```
+```dart
 Core.componentResolver.registerType<MyViewModel>(() {
   return MyViewModel(Core.componentResolver.resolveType<NavigationService>());
 });
@@ -244,13 +244,13 @@ Components are resolved from the componentResolver by type, either by passing th
 
 #### Passing the type by parameter
 
-```
+```dart
 var myClass = Core.ComponentResolver.resolve(MyClass);
 ```
 
 #### Using a generic type
 
-```
+```dart
 var myClass = Core.ComponentResolver.resolve<MyClass>();
 ```
 
@@ -260,7 +260,7 @@ Stateless widgets cannot change, as such they can only get information out of a 
 
 Creating a stateless widget should look like this:
 
-```
+```dart
 class MyStatelessWidget extends FmvvmStatelessWidget<SomeViewModel> {
   MyStatelessWidget(ViewModel viewModel, {Key key})
       : super(viewModel, true, key: key);
@@ -274,7 +274,7 @@ Now the build method can be overridden to create the widget interface and used v
 
 The getValueWithConversion method can be used to pull values out of the viewmodel. To use this method pass it a reference to the viewmodel and the value stored in the property that we want to use.
 
-```
+```dart
 @override
 Widget build(BuildContext context) {
   super.build(context);
@@ -300,7 +300,7 @@ Widget build(BuildContext context) {
 
 We can also set the value of the Text widget directly to the counter property in the view model, but then we would have to handle any required value conversion manually. More on that later.
 
-```
+```dart
 Text(viewModel.counter.toString())
 ```
 
@@ -308,7 +308,7 @@ Text(viewModel.counter.toString())
 
 Stateful widget should inherit from FmvvmStatefulWidget.
 
-```
+```dart
 class MyStatefulWidget extends FmvvmStatefulWidget<MyViewModel> {
   MyStatefulWidget(MyViewModel viewModel, {Key key, this.title})
       : super(viewModel, key: key);
@@ -317,14 +317,14 @@ class MyStatefulWidget extends FmvvmStatefulWidget<MyViewModel> {
 
 Classes that inherit from FmvvmStatefulWidget should always use a State object that inherits from FmvvmState and pass class that derives from BindableBase to the state object.
 
-```
+```dart
 @override
 MyState createState() => MyState(viewModel);
 ```
 
 To create the State object we simply extend from FmvvmState.
 
-```
+```dart
 class MyState extends FmvvmState<MyStatefulWidget, MyViewModel> {
   MyState(MyViewModel viewModel) : super(viewModel, true);
 }
@@ -342,7 +342,7 @@ To create bindings we need to use the BindingWidget. The BindingWidget is part o
 
 A single BindingWidget can contain one or more bindings. Consider the following code inside of a build method.
 
-```
+```dart
 BindingWidget<_HomePageViewModel>(
   bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay)],
   builder: (bc) => Hero(
@@ -366,7 +366,7 @@ We can also pass a ValueConverter which will be discussed later.
 
 We saw how to setup a binding widget, but how do we get information from it. For that we are going to use two methods on the BindingWidget: of and getValue. The of method will find the BindingWidget in the tree and the getValue method will return the value. Here is that same binding code again, but this time we'll be setting the value of the text widget.
 
-```
+```dart
 BindingWidget<_HomePageViewModel>(
   bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay, valueConverter: _NumberValueConverter())],
   builder: (bc) => Hero(
@@ -384,7 +384,7 @@ Once we have a reference to that BindingWidget we call getValue. To this method 
 
 That handles getting value changes from the viewmodel to the widget, how about values that change in the widget back to the viewmodel? That gets a little more complicated. Let's look at a Switch.
 
-```
+```dart
 BindingWidget<_HomePageViewModel>(
   bindings: <Binding>[Binding('testBool', bindableBase, _HomePageViewModel.testBoolProperty, bindingDirection: BindingDirection.TwoWay)],
   builder: (c) => Switch(
@@ -400,13 +400,13 @@ But what about things that use a controller like a TextField?
 
 To do this we first create the controller in the State object.
 
-```
+```dart
 TextEditingController _myController;
 ```
 
 Then create an instance of it in the initState method.
 
-```
+```dart
 @override
 void initState() {
   super.initState();
@@ -417,7 +417,7 @@ void initState() {
 
 Then in the build method we can use our BindingWidget:
 
-```
+```dart
 BindingWidget<_HomePageViewModel>(
   bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay, valueConverter: _NumberValueConverter())],
   builder: (bc) {
@@ -439,7 +439,7 @@ Here in our builder property of the BindingWidget we create a function and in th
 
 Commands are functions that we want to call on our viewmodel. In the viewmodels section we went over how a Command can be set up in a view model. Here is an example of calling that command from a FloatingActionButton widget in the build method.
 
-```
+```dart
 floatingActionButton: FloatingActionButton(
   onPressed: viewModel.incrementCounter.execute,
   tooltip: 'Increment',
@@ -449,7 +449,7 @@ floatingActionButton: FloatingActionButton(
 
 Commands can also take parameters. Here is an example using a FlatButton widget.
 
-```
+```dart
 FlatButton(
   child: Text('Navigate'),
   onPressed: () {viewModel.navigate.execute(BindingWidget.of<_SomeViewModel>(bc).getValue('someBindingName'));})
@@ -465,7 +465,7 @@ What does this have to do with value conversion? Simply that it is expected that
 
 First we create a class that can convert back and forth:
 
-```
+```dart
 class NumberValueConverter implements ValueConverter {
   Object convert(Object source, Object value, {Object parameter}) {
     return value.toString();
@@ -481,7 +481,7 @@ The convert function is used by a binding to go from the value in the viewmodel 
 
 Value converters are sent to bindings when they are created and used automatically after that on calls to getValue and setValue.
 
-```
+```dart
 BindingWidget<_HomePageViewModel>(
   bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay, valueConverter: _NumberValueConverter())],
   builder: (bc) => Hero(
@@ -499,7 +499,7 @@ The final option for value converters is that they can accept an parameter to he
 
 fmvvm allows us to do viewmodel to viewmodel navigation. That is to say that when we want to navigate, that is application logic that should happen in the viewmodel, usually within a Command. Since the viewmodel doesn't know anything about the presentation layer, it just states what other viewmodel in the system it wants to navigation to. Fmvvm uses that to figure out what widget to display. Consider the following code:
 
-```
+```dart
 navigationService.navigate<Object, SomeOtherViewModel>(parameter: "58");
 ```
 
@@ -516,7 +516,7 @@ In order for all this to work a couple of things need to be true.
 
 Here is how those routes can be set up in a class that extends FmvvmApp:
 
-```
+```dart
   @override
   Route getRoutes(RouteSettings settings) {
     if (settings.name == '_HomePageView') {
@@ -542,7 +542,7 @@ The buildRoute method is provided for us as part of the FmvvmApp base class.
 
 Navigating back is as simple as calling:
 
-```
+```dart
 NavigationService.navigateBack();
 ```
 
@@ -552,7 +552,7 @@ Fmvvm's navigation service also allows you to navigate to another viewmodel and 
 
 The navigateForResult method is made from the calling viewmodel and takes an additional generic type to specify a return value. Take the following code:
 
-```
+```dart
 int someMethod() async {
   return await _navigationService.navigateForResult<int, SomeOtherViewModel>();
 }
@@ -562,7 +562,7 @@ In some method we are using the navigationService to navigate to the SomeOtherVi
 
 In SomeOtherViewModel we might also have code like this:
 
-```
+```dart
 Command _navigateBack;
 
 Command get navigateBack {
@@ -577,7 +577,7 @@ In this case the navigateBack Command would pop the current viewmodel off the st
 
 Often there may be a view with a back button or a hardware back button that is pressed on an Android device. To handle this we can use a WillPopScope widget as shown here:
 
-```
+```dart
 WillPopScope(
   onWillPop: () async {
     await bindableBase.navigateBack.execute();
@@ -595,7 +595,7 @@ For two way binding to work correctly there is a class that we can use called No
 
 Here is how to use the notification list in a class:
 
-```
+```dart
 class _ListViewModel extends ViewModel {
   _ListViewModel() {
     myList = NotificationList();
@@ -629,7 +629,7 @@ Here we have a viewmodel that uses a NotificationList to expose out a bunch of l
 
 Now that same list viewmodel may also have a Command like this:
 
-```
+```dart
 Command get addRow {
   _addRow ??= Command(() {
     myList.add(_ListItem("Another", "Item"));
@@ -640,7 +640,7 @@ Command get addRow {
 
 We can now create a binding to the myList property and then if the addRow Command is called, a new item will be added to the list and the UI will be updated. To do this we can use the following UI code for the list:
 
-```
+```dart
 @override
 Widget build(BuildContext context) {
   super.build(context);
@@ -670,7 +670,7 @@ Widget build(BuildContext context) {
 
 For each line item in the list we are binding to a widget as well and passing in the row class that implements BindableBase.
 
-```
+```dart
 class _ListRowWidget extends FmvvmStatelessWidget<_ListItem> {
   _ListRowWidget(_ListItem bindableBase) : super(bindableBase, false);
 
@@ -695,7 +695,7 @@ The MessageService allows the application to be decoupled by providing a mechani
 
 The MessageService is by default added to the fmvvm inversion of control container. The easiest way to get a reference to it is to inject it into a class.
 
-```
+```dart
 class SomeViewModel extends ViewModel {
   SomeViewModel(this._messageService);
 
@@ -718,7 +718,7 @@ Messages have a name and to listen for messages with a given name we must first 
 
 Consider the following code to create a subscription object:
 
-```
+```dart
 var subscription = Subscription("SomeMessageName", ((p) {
       /// do some stuff when the message is received.
       /// p is the parameter sent with the message.
@@ -727,7 +727,7 @@ var subscription = Subscription("SomeMessageName", ((p) {
 
 Then to register the subscription.
 
-```
+```dart
 _messageService.subscribe(subscription);
 ```
 
@@ -737,13 +737,13 @@ _messageService.subscribe(subscription);
 
 It is common to need to remove subscriptions so that messages don't keep coming to object and viewmodels that are not being used any more. To remove a single subscription a reference to the subscription object needs to be maintained and sent to the unsubscribe method.
 
-```
+```dart
 _messageService.unsubscribe(subscription);
 ```
 
 All subscriptions that are currently in effect, including system registrations, can be removed with clearAllSubscriptions().
 
-```
+```dart
 _messageService.clearAllSubscriptions();
 ```
 
@@ -751,7 +751,7 @@ _messageService.clearAllSubscriptions();
 
 The first step to send a message is to create a Message object. A Message object has two parts, a name of the subscription and a parameter to send with the message.
 
-```
+```dart
 var message = Message("SomeMessageName", parameter);
 ```
 
@@ -759,7 +759,7 @@ var message = Message("SomeMessageName", parameter);
 
 To send the message call the publish method passing the message object. If there are no subscribers for the name of the message being sent then nothing will happen. There could be many subscribers as well and each will be sent the message in turn. There is no way to control the order in which multiple subscribers listening for the same message will receive the message.
 
-```
+```dart
 _messageService.publish(message);
 ```
 
@@ -768,7 +768,7 @@ There is one message that gets sent by default by fmvvm. Any objects that derive
 
 To listen for the current context, create a subscription and add it to the messageService.
 
-```
+```dart
 var subscription = Subscription(Constants.newBuildContext, ((p) {
       /// p will contain the buildContext
   }));
@@ -782,7 +782,7 @@ _messageService.subscribe(subscription);
 
 Here is a sample app that puts together the concepts we have discussed.
 
-```
+```dart
 import 'package:flutter/material.dart';
 
 import 'package:fmvvm/bindings/bindings.dart';

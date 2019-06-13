@@ -43,7 +43,9 @@ class FmvvmMessageService extends MessageService {
       var messenger =
           _messengers.singleWhere((m) => m.name == subscription.name);
 
-      messenger.streamController.stream.asBroadcastStream().listen(subscription.messageHandler);
+      messenger.streamController.stream
+          .asBroadcastStream()
+          .listen(subscription.messageHandler);
     }
   }
 

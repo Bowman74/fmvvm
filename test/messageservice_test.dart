@@ -57,7 +57,8 @@ void main() {
     messageService.publish(message);
   });
 
-    test('Subscribe to message and unsubscribe all, expect not to receive it', () {
+  test('Subscribe to message and unsubscribe all, expect not to receive it',
+      () {
     var messageName = "testMessage";
     var messageService = FmvvmMessageService();
     var expectedMessage = "This is the message";
@@ -84,8 +85,8 @@ void main() {
 
     messageService.publish(message);
   });
-  
-    test('Receive multiple subscriptions', () {
+
+  test('Receive multiple subscriptions', () {
     var messageName = "testMessage";
     var messageService = FmvvmMessageService();
     var expectedMessage = "This is the message";

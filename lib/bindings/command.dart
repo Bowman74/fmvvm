@@ -5,7 +5,7 @@ part of fmvvm.bindings;
 /// A command object should be returned by a property get statement.
 class Command {
   Command(Function function, [Function canExecuteFunction]) {
-    _function = function ?? ArgumentError("Command function cannot be null");
+    _function = function;
     _canExecuteFunction = canExecuteFunction ?? () => true;
   }
   

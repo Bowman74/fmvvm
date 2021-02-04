@@ -17,9 +17,8 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
   /// This looks up the context for an ancestor that is a BindingWidget of the
   /// supplied type. If none are found, an [ArgumentError] is raised.
   static BindingWidget<T> of<T extends BindableBase>(BuildContext context) {
-    final type = Utilities.typeOf<BindingWidget<T>>();
     final bindingWidget =
-        context.ancestorWidgetOfExactType(type) as BindingWidget<T>;
+        context.findAncestorWidgetOfExactType<BindingWidget<T>>();
 
     if (bindingWidget == null) {
       throw ArgumentError('No BindingWidgets found for the specified type.');

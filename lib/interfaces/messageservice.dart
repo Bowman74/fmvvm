@@ -28,13 +28,13 @@ abstract class MessageService {
 
 /// A subscription to be used with the MessageService.
 class Subscription {
-  Subscription(String name, Function(Object parameter) messageHandler) {
+  Subscription(String name, void Function(dynamic) messageHandler) {
     _name = name;
     _messageHandler = messageHandler;
   }
 
-  String _name;
-  Function(Object parameter) _messageHandler;
+  String _name = "";
+  void Function(dynamic) _messageHandler = (_) {};
 
   /// The name of the subscription to listen to messages for.
   ///
@@ -43,7 +43,7 @@ class Subscription {
 
   /// The method to call when a message is recieved for the name. The [parameter]
   /// containes the payload of the message.
-  Function(Object parameter) get messageHandler => _messageHandler;
+  void Function(dynamic parameter) get messageHandler => _messageHandler;
 }
 
 /// A message to send to the subscription service.
@@ -53,8 +53,8 @@ class Message {
     _parameter = parameter;
   }
 
-  String _name;
-  Object _parameter;
+  String _name = "";
+  Object _parameter = Object();
 
   /// The name of the messager to send.
   ///

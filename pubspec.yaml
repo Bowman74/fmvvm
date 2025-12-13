@@ -1,11 +1,10 @@
 name: fmvvm
 description: An mvvm framework for Flutter. This is intended to easily create a formal application architecture.
-version: 0.9.6
-author: "Kevin E Ford <bowman74@hotmail.com>"
+version: 0.9.8
 homepage: https://github.com/Bowman74/fmvvm
 
 environment:
-    sdk: ">=2.2.0 <3.0.0"
+    sdk: ">=2.12.0 <3.11.0"
 
 dependencies:
     flutter:

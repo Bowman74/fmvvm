@@ -9,14 +9,12 @@ void main() {
     var messageService = FmvvmMessageService();
     var expectedMessage = "This is the message";
 
-    Timer t;
+    Timer? t;
 
     var subscription = Subscription(messageName, expectAsync1((e) {
       expect(e, equals(expectedMessage));
-      if (t != null) {
-        t.cancel();
-      }
-    }));
+      t!.cancel();
+        }));
 
     messageService.subscribe(subscription);
 
@@ -35,13 +33,11 @@ void main() {
     var expectedMessage = "This is the message";
     var notCalledMessage = "Not called";
 
-    Timer t;
+    Timer? t;
 
     var subscription = Subscription(messageName, expectAsync1((e) {
-      if (t != null) {
-        t.cancel();
-      }
-      expect(e, equals(notCalledMessage));
+      t!.cancel();
+          expect(e, equals(notCalledMessage));
     }));
 
     messageService.subscribe(subscription);
@@ -64,13 +60,11 @@ void main() {
     var expectedMessage = "This is the message";
     var notCalledMessage = "Not called";
 
-    Timer t;
+    Timer? t;
 
     var subscription = Subscription(messageName, expectAsync1((e) {
-      if (t != null) {
-        t.cancel();
-      }
-      expect(e, equals(notCalledMessage));
+      t!.cancel();
+          expect(e, equals(notCalledMessage));
     }));
 
     messageService.subscribe(subscription);
@@ -91,23 +85,19 @@ void main() {
     var messageService = FmvvmMessageService();
     var expectedMessage = "This is the message";
 
-    Timer t;
+    Timer? t;
 
     var subscription1 = Subscription(messageName, expectAsync1((e) {
       expect(e, equals(expectedMessage));
-      if (t != null) {
-        t.cancel();
-      }
-    }));
+      t!.cancel();
+        }));
 
     messageService.subscribe(subscription1);
 
     var subscription2 = Subscription(messageName, expectAsync1((e) {
       expect(e, equals(expectedMessage));
-      if (t != null) {
-        t.cancel();
-      }
-    }));
+      t!.cancel();
+        }));
 
     messageService.subscribe(subscription2);
 

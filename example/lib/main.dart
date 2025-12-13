@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:fmvvm/bindings/bindings.dart';
 import 'package:fmvvm/fmvvm.dart';
-import 'package:fmvvm/interfaces/interfaces.dart';
 
 void main() => runApp(MyApp());
 
@@ -11,11 +9,11 @@ class MyApp extends FmvvmApp {
   void registerComponents(ComponentResolver componentResolver) {
     componentResolver.registerType<_HomePageViewModel>(() {
       return _HomePageViewModel(
-          componentResolver.resolveType<NavigationService>());
+          componentResolver.resolveType<NavigationService>() as NavigationService);
     });
     componentResolver.registerType<_CounterViewModel>(() {
       return _CounterViewModel(
-          componentResolver.resolveType<NavigationService>());
+          componentResolver.resolveType<NavigationService>() as NavigationService);
     });
     componentResolver.registerType<_ListViewModel>(() {
       return _ListViewModel();
@@ -37,23 +35,22 @@ class MyApp extends FmvvmApp {
     if (settings.name == '_HomePageView') {
       var arguments = settings.arguments ??
           Core.componentResolver
-              .resolveType<NavigationService>()
+              .resolveType<NavigationService>()!
               .createViewModel<_HomePageViewModel>(null);
-      return buildRoute(settings, new _HomePageView(arguments));
+      return buildRoute(settings, new _HomePageView(arguments as _HomePageViewModel));
     } else if (settings.name == '_CounterView') {
-      return buildRoute<int>(settings, new _CounterView(settings.arguments));
+      return buildRoute<int>(settings, new _CounterView(settings.arguments as _CounterViewModel));
     } else if (settings.name == '_ListView') {
-      return buildRoute(settings, new _RWListView(settings.arguments));
+      return buildRoute(settings, new _RWListView(settings.arguments as _ListViewModel));
     }
-    return null;
+    throw new Exception('No route defined for ${settings.name}');
   }
 }
 
 class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
-  _HomePageView(ViewModel viewModel, {Key key, this.title})
+  _HomePageView(_HomePageViewModel viewModel, {Key? key})
       : super(viewModel, key: key);
 
-  final String title;
 
   @override
   _HomePageViewState createState() => _HomePageViewState(bindableBase);
@@ -62,8 +59,8 @@ class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
 class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
   _HomePageViewState(_HomePageViewModel viewModel) : super(viewModel, true);
 
-  TextEditingController controller;
-  TextEditingController controller2;
+  TextEditingController? controller;
+  TextEditingController? controller2;
 
   @override
   void initState() {
@@ -97,7 +94,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               builder: (bc) => Hero(
                     tag: 'countHero',
                     child: Text(BindingWidget.of<_HomePageViewModel>(bc)
-                        .getValue('counter')),
+                        .getGenericValue<String>('counter')),
                   ),
             ),
             BindingWidget<_HomePageViewModel>(
@@ -108,15 +105,15 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                       valueConverter: _NumberValueConverter())
                 ],
                 builder: (bc) {
-                  controller.text = BindingWidget.of<_HomePageViewModel>(bc)
-                      .getValue('counter');
-                  controller.selection = new TextSelection.collapsed(
-                      offset: controller.text.length);
+                  controller!.text = BindingWidget.of<_HomePageViewModel>(bc)
+                      .getGenericValue<String>('counter');
+                  controller!.selection = new TextSelection.collapsed(
+                      offset: controller!.text.length);
                   return TextField(
-                    style: Theme.of(context).textTheme.display1,
+                    style: Theme.of(context).textTheme.headlineMedium,
                     controller: controller,
                     onChanged: BindingWidget.of<_HomePageViewModel>(bc)
-                        .getOnChanged('counter'),
+                        .getOnChanged('counter') as void Function(String),
                   );
                 }),
             BindingWidget<_HomePageViewModel>(
@@ -128,15 +125,15 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                 ],
                 builder: (bc) {
                   var controllerText = BindingWidget.of<_HomePageViewModel>(bc)
-                      .getValue('counter') as String;
-                  controller2.text = controllerText;
-                  controller2.selection = new TextSelection.collapsed(
+                      .getGenericValue<String>('counter');
+                  controller2!.text = controllerText;
+                  controller2!.selection = new TextSelection.collapsed(
                       offset: controllerText.length);
                   return TextField(
-                    style: Theme.of(context).textTheme.display1,
+                    style: Theme.of(context).textTheme.headlineMedium,
                     controller: controller2,
                     onChanged: BindingWidget.of<_HomePageViewModel>(bc)
-                        .getOnChanged('counter'),
+                        .getOnChanged('counter') as void Function(String),
                   );
                 }),
             BindingWidget<_HomePageViewModel>(
@@ -147,9 +144,9 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               ],
               builder: (c) => Switch(
                     value: BindingWidget.of<_HomePageViewModel>(c)
-                        .getValue('testBool') as bool,
+                        .getGenericValue<bool>('testBool'),
                     onChanged: BindingWidget.of<_HomePageViewModel>(c)
-                        .getOnChanged('testBool'),
+                        .getOnChanged('testBool') as void Function(bool),
                   ),
             ),
             BindingWidget<_HomePageViewModel>(
@@ -161,21 +158,21 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               builder: (c) => Expanded(
                     child: Switch(
                       value: BindingWidget.of<_HomePageViewModel>(c)
-                          .getValue('testBool') as bool,
+                          .getGenericValue<bool>('testBool'),
                       onChanged: BindingWidget.of<_HomePageViewModel>(c)
-                          .getOnChanged('testBool'),
+                          .getOnChanged('testBool') as void Function(bool),
                     ),
                   ),
             ),
-            FlatButton(
-                child: Text(
+            TextButton(
+                child: const Text(
                   'Go to Count and add 1',
                 ),
                 onPressed: () {
                   bindableBase.viewValueAddOne.execute();
                 }),
-            FlatButton(
-                child: Text(
+            TextButton(
+                child: const Text(
                   'Go to Read/Write List',
                 ),
                 onPressed: () {
@@ -194,7 +191,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
 }
 
 class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
-  _CounterView(_CounterViewModel viewModel, {Key key})
+  _CounterView(_CounterViewModel viewModel, {Key? key})
       : super(viewModel, true, key: key);
 
   @override
@@ -204,10 +201,16 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
         appBar: AppBar(
           title: Text('Current Count'),
         ),
-        body: WillPopScope(
-            onWillPop: () async {
-              await bindableBase.navigateBack.execute();
-              return false;
+        body: PopScope(
+            canPop: false,
+            onPopInvokedWithResult:  (didPop, result) async {
+              if (didPop) {
+                return;
+              }
+
+              if (context.mounted) {
+                bindableBase.navigateBack.execute();
+              }
             },
             child: Center(
               child: Column(
@@ -225,7 +228,7 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
                     builder: (bc) => Hero(
                           tag: 'countHero',
                           child: Text(BindingWidget.of<_CounterViewModel>(bc)
-                              .getValue('counter')),
+                              .getGenericValue<String>('counter')),
                         ),
                   ),
                 ],
@@ -235,10 +238,8 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
 }
 
 class _RWListView extends FmvvmStatefulWidget<_ListViewModel> {
-  _RWListView(ViewModel viewModel, {Key key, this.title})
+  _RWListView(_ListViewModel viewModel, {Key? key})
       : super(viewModel, key: key);
-
-  final String title;
 
   @override
   _RWListState createState() => _RWListState(bindableBase);
@@ -267,12 +268,11 @@ class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
         builder: (bc) => ListView.builder(
               shrinkWrap: true,
               padding: const EdgeInsets.all(20.0),
-              itemCount: (BindingWidget.of<_ListViewModel>(bc).getValue('list')
-                      as NotificationList)
+              itemCount: (BindingWidget.of<_ListViewModel>(bc).getGenericValue<NotificationList>('list'))
                   .length,
               itemBuilder: (context, position) {
                 return _ListRowWidget((BindingWidget.of<_ListViewModel>(bc)
-                    .getValue('list') as NotificationList)[position]);
+                    .getGenericValue<NotificationList>('list'))[position]);
               },
             ),
       ),
@@ -304,45 +304,45 @@ class _HomePageViewModel extends ViewModel {
 
   static PropertyInfo counterProperty = PropertyInfo('counter', int);
 
-  int get counter => getValue(counterProperty);
-  set counter(int value) => setValue(counterProperty, value);
+  int get counter => getGenericValue<int>(counterProperty);
+  set counter(int value) => setGenericValue<int>(counterProperty, value);
 
   static PropertyInfo currentDateProperty = PropertyInfo('currentDate', int);
 
-  DateTime get currentDate => getValue(currentDateProperty);
-  set currentDate(DateTime value) => setValue(currentDateProperty, value);
+  DateTime get currentDate => getGenericValue<DateTime>(currentDateProperty);
+  set currentDate(DateTime value) => setGenericValue<DateTime>(currentDateProperty, value);
 
   static PropertyInfo testBoolProperty = PropertyInfo('testBool', bool, false);
 
-  bool get testBool => getValue(testBoolProperty);
-  set testBool(bool value) => setValue(testBoolProperty, value);
+  bool get testBool => getGenericValue<bool>(testBoolProperty);
+  set testBool(bool value) => setGenericValue<bool>(testBoolProperty, value);
 
-  Command _incrementCounter;
+  Command? _incrementCounter;
 
   Command get incrementCounter {
     _incrementCounter ??= Command(() {
       counter++;
     });
-    return _incrementCounter;
+    return _incrementCounter!;
   }
 
-  Command _navigate;
+  Command? _navigate;
 
   Command get viewValueAddOne {
     _navigate ??= Command(() async {
       counter = await _navigationService
-          .navigateForResult<int, _CounterViewModel>(parameter: counter);
+          .navigateForResult<int, _CounterViewModel>(parameter: counter) as int;
     });
-    return _navigate;
+    return _navigate!;
   }
 
-  Command _goToRWList;
+  Command? _goToRWList;
 
   Command get goToRWList {
     _goToRWList ??= Command(() {
       _navigationService.navigate<_ListViewModel>();
     });
-    return _goToRWList;
+    return _goToRWList!;
   }
 }
 
@@ -352,20 +352,20 @@ class _CounterViewModel extends ViewModel {
   final NavigationService _navigationService;
 
   @override
-  void init(Object parameter) {
+  void init(Object? parameter) {
     setValue(counterProperty, parameter);
   }
 
   static PropertyInfo counterProperty = PropertyInfo('counter', int);
-  int get counter => getValue(counterProperty);
+  int get counter => getGenericValue<int>(counterProperty);
 
-  Command _navigateBack;
+  Command? _navigateBack;
 
   Command get navigateBack {
     _navigateBack ??= Command(() {
       _navigationService.navigateBackWithResult(counter + 1);
     });
-    return _navigateBack;
+    return _navigateBack!;
   }
 }
 
@@ -377,17 +377,17 @@ class _ListViewModel extends ViewModel {
   }
   static PropertyInfo myListProperty = PropertyInfo('myList', NotificationList);
 
-  NotificationList<_ListItem> get myList => getValue(myListProperty);
+  NotificationList<_ListItem> get myList => getGenericValue<NotificationList<_ListItem>>(myListProperty);
   set myList(NotificationList<_ListItem> value) =>
-      setValue(myListProperty, value);
+      setGenericValue<NotificationList<_ListItem>>(myListProperty, value);
 
-  Command _addRow;
+  Command? _addRow;
 
   Command get addRow {
     _addRow ??= Command(() {
       myList.add(_ListItem("Another", "Item"));
     });
-    return _addRow;
+    return _addRow!;
   }
 }
 
@@ -398,21 +398,21 @@ class _ListItem extends BindableBase {
   }
   static PropertyInfo lineOneProperty = PropertyInfo('lineOne', String);
 
-  String get lineOne => getValue(lineOneProperty);
-  set lineOne(String value) => setValue(lineOneProperty, value);
+  String get lineOne => getGenericValue<String>(lineOneProperty);
+  set lineOne(String value) => setGenericValue<String>(lineOneProperty, value);
 
   static PropertyInfo lineTwoProperty = PropertyInfo('lineTwo', String);
 
-  String get lineTwo => getValue(lineTwoProperty);
-  set lineTwo(String value) => setValue(lineTwoProperty, value);
+  String get lineTwo => getGenericValue<String>(lineTwoProperty);
+  set lineTwo(String value) => setGenericValue<String>(lineTwoProperty, value);
 }
 
 class _NumberValueConverter implements ValueConverter {
-  Object convert(Object source, Object value, {Object parameter}) {
+  Object convert(Object source, Object? value, {Object? parameter}) {
     return value.toString();
   }
 
-  Object convertBack(Object source, Object value, {Object parameter}) {
-    return int.tryParse(value) ?? 0;
+  Object convertBack(Object source, Object? value, {Object? parameter}) {
+    return int.tryParse(value as String) ?? 0;
   }
 }

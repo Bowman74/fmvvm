@@ -2,13 +2,13 @@ part of fmvvm.bindings;
 
 /// Contains the data backing a PropertyInfo for an instance of a class.
 class FieldData<T> {
-  String _name;
-  int _id;
+  final String _name;
+  final int _id;
 
-  FieldData(String name, int id, Object startingValue) {
-    _name = name;
-    _id = id;
-    value = startingValue;
+  FieldData(String name, int id, T? startingValue):
+    _name = name,
+    _id = id,
+    value = startingValue {
   }
 
   /// The name of the property.
@@ -20,5 +20,5 @@ class FieldData<T> {
   int get id => _id;
 
   /// The current value of the property.
-  T value;
+  T? value;
 }

@@ -14,14 +14,12 @@ void main() {
 
   test('ensures property listener called correctly', () {
     final testViewModel = _TestViewModel();
-    Timer t;
+    Timer? t;
 
     testViewModel.addPropertyListener(expectAsync1((e) {
       expect(e, equals("stringTest"));
-      if (t != null) {
-        t.cancel();
-      }
-    }));
+      t!.cancel();
+        }));
 
     String _expectedValue = 'foo';
 
@@ -34,13 +32,11 @@ void main() {
 
   test('ensures normal listener called correctly', () {
     final testViewModel = _TestViewModel();
-    Timer t;
+    Timer? t;
 
     testViewModel.addListener(expectAsync0(() {
-      if (t != null) {
-        t.cancel();
-      }
-    }));
+      t!.cancel();
+        }));
 
     String _expectedValue = 'foo';
 
@@ -85,21 +81,21 @@ void main() {
 class _TestViewModel extends BindableBase {
   static PropertyInfo stringTestProperty = PropertyInfo('stringTest', String);
 
-  String get stringTest => getValue(stringTestProperty);
+  String get stringTest => getValue(stringTestProperty) as String;
   set stringTest(String value) => {
         setValue(stringTestProperty, value),
       };
 
   static PropertyInfo intTestProperty = PropertyInfo('intTest', int);
 
-  int get intTest => getValue(intTestProperty);
+  int get intTest => getValue(intTestProperty) as int;
   set intTest(int value) => {
         setValue(intTestProperty, value),
       };
 
   static PropertyInfo doubleTestProperty = PropertyInfo('doubleTest', double);
 
-  double get doubleTest => getValue(doubleTestProperty);
+  double get doubleTest => getValue(doubleTestProperty) as double;
   set doubleTest(double value) => {
         setValue(doubleTestProperty, value),
       };
@@ -107,7 +103,7 @@ class _TestViewModel extends BindableBase {
   static PropertyInfo dateTimeTestProperty =
       PropertyInfo('dateTimeTest', DateTime);
 
-  DateTime get dateTimeTest => getValue(dateTimeTestProperty);
+  DateTime get dateTimeTest => getValue(dateTimeTestProperty) as DateTime;
   set dateTimeTest(DateTime value) => {
         setValue(dateTimeTestProperty, value),
       };
@@ -115,8 +111,8 @@ class _TestViewModel extends BindableBase {
   static PropertyInfo referenceTypeTestProperty =
       PropertyInfo('referenceTypeTest', _TestViewModel);
 
-  _TestViewModel get referenceTypeTest => getValue(referenceTypeTestProperty);
-  set referenceTypeTest(_TestViewModel value) => {
+  _TestViewModel? get referenceTypeTest => getValue(referenceTypeTestProperty) as _TestViewModel?;
+  set referenceTypeTest(_TestViewModel? value) => {
         setValue(referenceTypeTestProperty, value),
       };
 }

@@ -1,4 +1,4 @@
-part of fmvvm.interfaces;
+part of 'interfaces.dart';
 
 /// Supports the publish/subscribe pattern.
 ///

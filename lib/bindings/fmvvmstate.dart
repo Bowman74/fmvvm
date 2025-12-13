@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// State object to be used with binding for StatefulWidgets.
 ///

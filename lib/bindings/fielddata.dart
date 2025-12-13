@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Contains the data backing a PropertyInfo for an instance of a class.
 class FieldData<T> {

@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Information about a property that can be bound to.
 ///

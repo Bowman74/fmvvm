@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Manages the backing field data for an instance of the BindableBase class.
 class FieldManager {

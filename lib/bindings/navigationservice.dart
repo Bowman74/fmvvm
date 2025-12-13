@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Interface for a navigation service for use by view models.
 ///

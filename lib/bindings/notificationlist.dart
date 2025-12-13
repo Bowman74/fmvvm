@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// The NotificationList extends a normal list base and adds a ChangeNotifier
 ///

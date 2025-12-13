@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 // Base object to be used to create ViewModels.
 abstract class ViewModel extends BindableBase {

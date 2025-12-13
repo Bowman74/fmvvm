@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Used by ViewModels and other BindableBase objects to execute a command/function.
 ///

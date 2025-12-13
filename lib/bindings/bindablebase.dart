@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Used to define a property changed listener that sends notifications when
 /// particular properties have changed.

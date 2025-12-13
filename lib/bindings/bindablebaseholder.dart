@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Interface to be implemented by objects that retain references to view models.
 abstract class BindableBaseHolder<T extends BindableBase> {

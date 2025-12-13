@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Class to expend for all StatelessWidgets that plan to use data in a viewmodel for display.
 ///

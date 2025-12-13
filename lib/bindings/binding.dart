@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Used for a binding between a widget and a object that implements BindableBase.
 ///

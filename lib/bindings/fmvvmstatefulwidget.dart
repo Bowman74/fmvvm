@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Class to expend for all StatefulWidgets that plan to use databinding and be bound to a viewmodel.
 abstract class FmvvmStatefulWidget<V extends BindableBase>

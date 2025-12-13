@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Class to use for the main application in an fmvvm app.
 abstract class FmvvmApp extends StatelessWidget {

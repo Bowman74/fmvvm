@@ -1,4 +1,4 @@
-part of fmvvm.interfaces;
+part of 'interfaces.dart';
 
 /// Interface for valueConverters that change data from one format to another and back.
 ///

@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// State object to be used with binding for StatefulWidgets.
 ///
@@ -11,7 +11,6 @@ abstract class FmvvmState<T extends StatefulWidget, V extends BindableBase>
   /// [_viewModel] is the view model to be used.
   /// [_isNavigable] should be true if this widget will be treated like a page instead of part
   /// of a page.
-  @mustCallSuper
   FmvvmState(this._bindableBase, this._isNavigable) {
     if (_bindableBase is! ViewModel && _isNavigable) {
       throw ArgumentError("Navigable state objects must be of type ViewModel");
@@ -33,9 +32,9 @@ abstract class FmvvmState<T extends StatefulWidget, V extends BindableBase>
   Widget build(BuildContext context) {
     if (_isNavigable) {
       Core.componentResolver
-          .resolveType<MessageService>()
+          .resolveType<MessageService>()!
           .publish(Message(Constants.newBuildContext, context));
     }
-    return null;
+    return Container();
   }
 }

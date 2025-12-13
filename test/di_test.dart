@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fmvvm/fmvvm.dart';
-import 'package:fmvvm/bindings/bindings.dart';
 
 void main() {
   test(
@@ -20,7 +19,7 @@ void main() {
     var retrievedInstance = container.resolveType<_SimpleConstructor>();
 
     expect(retrievedInstance, isNotNull);
-    expect(retrievedInstance.stringTest, _expectedValue);
+    expect(retrievedInstance!.stringTest, _expectedValue);
   });
 
   test(
@@ -70,10 +69,10 @@ void main() {
       return _SimpleConstructor();
     });
     container.registerType<_ComplexConstructor>(() {
-      return _ComplexConstructor(container.resolveType<_SimpleConstructor>());
+      return _ComplexConstructor(container.resolveType<_SimpleConstructor>() as _SimpleConstructor);
     });
 
-    var retrievedInstance = container.resolveType<_ComplexConstructor>();
+    var retrievedInstance = container.resolveType<_ComplexConstructor>() as _ComplexConstructor;
 
     expect(retrievedInstance, isNotNull);
     expect(retrievedInstance.childObject, isNotNull);
@@ -84,7 +83,7 @@ void main() {
 class _SimpleConstructor extends BindableBase {
   static PropertyInfo stringTestProperty = PropertyInfo('stringTest', String);
 
-  String get stringTest => getValue(stringTestProperty);
+  String get stringTest => getValue(stringTestProperty) as String;
   set stringTest(String value) => {
         setValue(stringTestProperty, value),
       };
@@ -98,7 +97,7 @@ class _ComplexConstructor extends BindableBase {
   static PropertyInfo childObjectProperty =
       PropertyInfo('childObject', _SimpleConstructor);
 
-  _SimpleConstructor get childObject => getValue(childObjectProperty);
+  _SimpleConstructor get childObject => getValue(childObjectProperty) as _SimpleConstructor;
   set childObject(_SimpleConstructor value) => {
         setValue(childObjectProperty, value),
       };

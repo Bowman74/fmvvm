@@ -1,3 +1,16 @@
+## [0.9.9] - 12/13/2025.
+
+* This release adds:
+
+- Updates for Dart language
+
+## [0.9.8] - 12/13/2025.
+
+* This release adds:
+ 
+- Changed for latest versions of Dart and Flutter
+- Support for null types
+
 ## [0.9.6] - 6/8/2019.
 
 * This release adds:

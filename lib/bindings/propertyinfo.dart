@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Information about a property that can be bound to.
 ///
@@ -6,7 +6,7 @@ part of fmvvm.bindings;
 /// inherits from BindableBase.
 class PropertyInfo {
   String _name;
-  Object _defaultValue;
+  Object? _defaultValue;
   Type _type;
   int _id = -1;
 
@@ -15,7 +15,7 @@ class PropertyInfo {
   /// [_name] - The name of the property, usualle the same as the name of the getter/setter
   /// [_type] - The type of the property.
   /// [defaultValue] - A default value for the property if it has not been set.
-  PropertyInfo(this._name, this._type, [Object defaultValue]) {
+  PropertyInfo(this._name, this._type, [Object? defaultValue]) {
     if (defaultValue == null && _type == String) {
       _defaultValue = '';
     } else if (defaultValue == null && _type == int) {
@@ -40,7 +40,7 @@ class PropertyInfo {
   /// A properties default value.
   ///
   /// Used if the property is called before being explicitly set.
-  Object get defaultValue => _defaultValue;
+  Object? get defaultValue => _defaultValue;
 
   /// A unique id used by fmvvm to tie this propertyinfo to a backing field in a class instance.
   int get id => _id;
@@ -48,6 +48,6 @@ class PropertyInfo {
 
   /// Used by fmvvm to create backing information for this property info.
   FieldData createFieldData() {
-    return new FieldData(_name, id, _defaultValue);
+    return new FieldData(_name, id, defaultValue);
   }
 }

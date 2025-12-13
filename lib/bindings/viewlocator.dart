@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Interface for Geting information about a view or route based on a view model type.
 ///

@@ -1,4 +1,4 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Used to define a property changed listener that sends notifications when
 /// particular properties have changed.
@@ -6,16 +6,26 @@ typedef PropertyChangedListener = void Function(String propertyName);
 
 /// Class to be extended when creating any non widget object that can be bound to.
 abstract class BindableBase extends ChangeNotifier {
-  ObserverList<PropertyChangedListener> _listeners =
+  ObserverList<PropertyChangedListener>? _listeners =
       ObserverList<PropertyChangedListener>();
 
   FieldManager _fieldManager = FieldManager();
 
   /// Gives a new value to a property.
   @protected
-  void setValue(PropertyInfo propertyInfo, Object value) {
+  void setValue(PropertyInfo propertyInfo, Object? value) {
     if (_fieldManager.getValue(propertyInfo) != value) {
       _fieldManager.setValue(propertyInfo, value);
+
+      notifyPropertyListeners(propertyInfo.name);
+    }
+  }
+
+    /// Gives a new value to a property.
+  @protected
+  void setGenericValue<T>(PropertyInfo propertyInfo, T value) {
+    if (_fieldManager.getGenericValue<T?>(propertyInfo) != value) {
+      _fieldManager.setGenericValue<T>(propertyInfo, value);
 
       notifyPropertyListeners(propertyInfo.name);
     }
@@ -25,18 +35,30 @@ abstract class BindableBase extends ChangeNotifier {
   ///
   /// If the property has not been set, the default value will be returned.
   @protected
-  Object getValue(PropertyInfo propertyInfo) {
+  Object? getValue(PropertyInfo propertyInfo) {
     return _fieldManager.getValue(propertyInfo);
+  }
+
+  /// Returns the current value for a property.
+  ///
+  /// If the property has not been set, the default value will be returned.
+  @protected
+  T getGenericValue<T>(PropertyInfo propertyInfo) {
+    return _fieldManager.getGenericValue<T>(propertyInfo);
   }
 
   /// Adds a listener that when called returns the string name of a property that has changed as a parameter.
   void addPropertyListener(PropertyChangedListener listener) {
-    _listeners.add(listener);
+    if (_listeners != null) {
+      _listeners!.add(listener);
+    }
   }
 
   /// Removes a property listener
   void removePropertyListener(PropertyChangedListener listener) {
-    _listeners.remove(listener);
+    if (_listeners != null) {
+      _listeners!.remove(listener);
+    }
   }
 
   /// Whether any listeners are currently registered.
@@ -56,7 +78,7 @@ abstract class BindableBase extends ChangeNotifier {
   /// so, stopping that same work.
   @override
   bool get hasListeners {
-    return _listeners.isNotEmpty || super.hasListeners;
+    return _listeners != null && _listeners!.isNotEmpty || super.hasListeners;
   }
 
   /// Call all the registered listeners.
@@ -79,9 +101,9 @@ abstract class BindableBase extends ChangeNotifier {
     notifyListeners();
     if (_listeners != null) {
       final List<PropertyChangedListener> localListeners =
-          List<PropertyChangedListener>.from(_listeners);
+          List<PropertyChangedListener>.from(_listeners!);
       for (var listener in localListeners) {
-        if (_listeners.contains(listener)) {
+        if (_listeners!.contains(listener)) {
           listener(propertyName);
         }
       }

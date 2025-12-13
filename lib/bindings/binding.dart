@@ -1,32 +1,32 @@
-part of fmvvm.bindings;
+part of 'bindings.dart';
 
 /// Used for a binding between a widget and a object that implements BindableBase.
 ///
 /// This item is usually created within a FmvvmState object.
 class Binding {
   Binding(String key, BindableBase source, PropertyInfo sourceProperty,
-      {BindingDirection bindingDirection,
-      fmvvm_interfaces.ValueConverter valueConverter}) {
-    this.source = source;
-    _sourceProperty = sourceProperty;
+      {BindingDirection? bindingDirection,
+      fmvvm_interfaces.ValueConverter? valueConverter}):
+       _key = key,
+       this.source = source,
+       _sourceProperty = sourceProperty,
+       _bindingDirection = bindingDirection ?? BindingDirection.TwoWay {
 
-    _bindingDirection = bindingDirection ?? BindingDirection.TwoWay;
     _valueConverter = valueConverter;
-    _key = key;
   }
 
-  String _key;
+  final String _key;
 
-  BindingDirection _bindingDirection;
+  final BindingDirection _bindingDirection;
 
-  PropertyInfo _sourceProperty;
+  final PropertyInfo _sourceProperty;
 
-  fmvvm_interfaces.ValueConverter _valueConverter;
+  fmvvm_interfaces.ValueConverter? _valueConverter;
 
   String get key => _key;
 
   /// The source bindable base object.
-  BindableBase source;
+  final BindableBase source;
 
   /// If the binding only happens once or if it is able to be bi-directional.
   BindingDirection get bindingDirection => _bindingDirection;
@@ -36,9 +36,9 @@ class Binding {
 
   /// An optional value converter to be used if the value needs to be changed when moving back and
   /// forth from the widget to the source.
-  fmvvm_interfaces.ValueConverter get valueConverter => _valueConverter;
+  fmvvm_interfaces.ValueConverter? get valueConverter => _valueConverter;
 
-  Object originalValue = _OriginalValueNeverSet;
+  Object? originalValue = _OriginalValueNeverSet;
 }
 
 /// Used to tell if a Binding object's original value was ever set.

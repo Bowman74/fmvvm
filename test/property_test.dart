@@ -23,7 +23,7 @@ void main() {
 
     String _expectedValue = 'foo';
 
-    t = new Timer(new Duration(seconds: 3), () {
+    t = Timer(Duration(seconds: 3), () {
       fail('event not fired in time');
     });
 
@@ -40,7 +40,7 @@ void main() {
 
     String _expectedValue = 'foo';
 
-    t = new Timer(new Duration(seconds: 3), () {
+    t = Timer(Duration(seconds: 3), () {
       fail('event not fired in time');
     });
 

@@ -1,4 +1,4 @@
-part of fmvvm;
+part of 'fmvvm.dart';
 
 /// Bootstraping class for the fmvvm framework.
 class Core {

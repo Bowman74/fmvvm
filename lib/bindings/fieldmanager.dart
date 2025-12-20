@@ -2,7 +2,7 @@ part of 'bindings.dart';
 
 /// Manages the backing field data for an instance of the BindableBase class.
 class FieldManager {
-  List<FieldData> _fieldDataList = new List<FieldData>.empty(growable: true);
+  List<FieldData> _fieldDataList = List<FieldData>.empty(growable: true);
 
   /// Get's the value for a property info on a class instance.
   Object? getValue(PropertyInfo propertyInfo) {

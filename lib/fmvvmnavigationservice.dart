@@ -1,4 +1,4 @@
-part of fmvvm;
+part of 'fmvvm.dart';
 
 /// Default implementation of the fmvvm NavigationService interface.
 class FmvvmNavigationService implements NavigationService {

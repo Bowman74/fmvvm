@@ -37,13 +37,13 @@ class MyApp extends FmvvmApp {
           Core.componentResolver
               .resolveType<NavigationService>()!
               .createViewModel<_HomePageViewModel>(null);
-      return buildRoute(settings, new _HomePageView(arguments as _HomePageViewModel));
+      return buildRoute(settings, _HomePageView(arguments as _HomePageViewModel));
     } else if (settings.name == '_CounterView') {
-      return buildRoute<int>(settings, new _CounterView(settings.arguments as _CounterViewModel));
+      return buildRoute<int>(settings, _CounterView(settings.arguments as _CounterViewModel));
     } else if (settings.name == '_ListView') {
-      return buildRoute(settings, new _RWListView(settings.arguments as _ListViewModel));
+      return buildRoute(settings, _RWListView(settings.arguments as _ListViewModel));
     }
-    throw new Exception('No route defined for ${settings.name}');
+    throw Exception('No route defined for ${settings.name}');
   }
 }
 
@@ -107,7 +107,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                 builder: (bc) {
                   controller!.text = BindingWidget.of<_HomePageViewModel>(bc)
                       .getGenericValue<String>('counter');
-                  controller!.selection = new TextSelection.collapsed(
+                  controller!.selection = TextSelection.collapsed(
                       offset: controller!.text.length);
                   return TextField(
                     style: Theme.of(context).textTheme.headlineMedium,
@@ -127,7 +127,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                   var controllerText = BindingWidget.of<_HomePageViewModel>(bc)
                       .getGenericValue<String>('counter');
                   controller2!.text = controllerText;
-                  controller2!.selection = new TextSelection.collapsed(
+                  controller2!.selection = TextSelection.collapsed(
                       offset: controllerText.length);
                   return TextField(
                     style: Theme.of(context).textTheme.headlineMedium,
@@ -207,7 +207,6 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
               if (didPop) {
                 return;
               }
-
               if (context.mounted) {
                 bindableBase.navigateBack.execute();
               }

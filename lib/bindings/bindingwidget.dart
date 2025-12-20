@@ -58,18 +58,18 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
   /// a [converterParameter] can be passed that will be send to a value
   /// converter if supplied with the binding.
   /// Generic [T] is the type to be returned.
-  T getGenericValue<T>(String key, {Object? converterParameter}) {
-    T returnValue;
+  V getGenericValue<V>(String key, {Object? converterParameter}) {
+    V returnValue;
     Binding binding = _getBinding(key);
     if (binding.bindingDirection == BindingDirection.OneTime &&
         !(binding.originalValue is _OriginalValueNeverSet)) {
-      returnValue = binding.originalValue as T;
+      returnValue = binding.originalValue as V;
     } else if (binding.valueConverter == null) {
-      returnValue = binding.source.getGenericValue<T>(binding.sourceProperty);
+      returnValue = binding.source.getGenericValue<V>(binding.sourceProperty);
     } else {
       returnValue = binding.valueConverter!.convert(
           binding.source, binding.source.getValue(binding.sourceProperty),
-          parameter: converterParameter) as T;
+          parameter: converterParameter) as V;
     }
 
     if (binding.originalValue is _OriginalValueNeverSet &&
@@ -104,10 +104,10 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
   /// converter if supplied with the binding. The [value] is the new value to
   /// set into the property specified by the binding.
   /// Generic [T] is the type as sent.
-  void setGenericValue<T>(String key, T value, {Object? converterParameter}) {
+  void setGenericValue<V>(String key, V value, {Object? converterParameter}) {
     Binding binding = _getBinding(key);
     if (binding.valueConverter == null) {
-      binding.source.setGenericValue<T>(binding.sourceProperty, value);
+      binding.source.setGenericValue<V>(binding.sourceProperty, value);
     } else {
       binding.source.setValue(
           binding.sourceProperty,

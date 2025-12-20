@@ -1,4 +1,4 @@
-part of fmvvm;
+part of 'fmvvm.dart';
 
 /// The default fmvvm dependency injection/IoC implementation.
 class ComponentResolver {

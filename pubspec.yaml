@@ -1,6 +1,6 @@
 name: fmvvm
 description: An mvvm framework for Flutter. This is intended to easily create a formal application architecture.
-version: 0.9.9
+version: 0.9.11
 homepage: https://github.com/Bowman74/fmvvm
 
 environment:
@@ -13,6 +13,7 @@ dependencies:
 dev_dependencies:
     flutter_test:
         sdk: flutter
+    lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

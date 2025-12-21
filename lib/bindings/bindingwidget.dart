@@ -58,18 +58,18 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
   /// a [converterParameter] can be passed that will be send to a value
   /// converter if supplied with the binding.
   /// Generic [T] is the type to be returned.
-  T getGenericValue<T>(String key, {Object? converterParameter}) {
-    T returnValue;
+  V getGenericValue<V>(String key, {Object? converterParameter}) {
+    V returnValue;
     Binding binding = _getBinding(key);
     if (binding.bindingDirection == BindingDirection.OneTime &&
         !(binding.originalValue is _OriginalValueNeverSet)) {
-      returnValue = binding.originalValue as T;
+      returnValue = binding.originalValue as V;
     } else if (binding.valueConverter == null) {
-      returnValue = binding.source.getGenericValue<T>(binding.sourceProperty);
+      returnValue = binding.source.getGenericValue<V>(binding.sourceProperty);
     } else {
       returnValue = binding.valueConverter!.convert(
           binding.source, binding.source.getValue(binding.sourceProperty),
-          parameter: converterParameter) as T;
+          parameter: converterParameter) as V;
     }
 
     if (binding.originalValue is _OriginalValueNeverSet &&
@@ -104,10 +104,10 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
   /// converter if supplied with the binding. The [value] is the new value to
   /// set into the property specified by the binding.
   /// Generic [T] is the type as sent.
-  void setGenericValue<T>(String key, T value, {Object? converterParameter}) {
+  void setGenericValue<V>(String key, V value, {Object? converterParameter}) {
     Binding binding = _getBinding(key);
     if (binding.valueConverter == null) {
-      binding.source.setGenericValue<T>(binding.sourceProperty, value);
+      binding.source.setGenericValue<V>(binding.sourceProperty, value);
     } else {
       binding.source.setValue(
           binding.sourceProperty,
@@ -137,7 +137,8 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
 /// A state object for use internally by fmvvm for BindingWidgets.
 class _BindingWidgetState<T> extends State<BindingWidget> {
   final List<Binding> _sourceBindings;
-  final List<_BindingListener> _bindingListeners = List<_BindingListener>.empty(growable: true);
+  final List<_BindingListener> _bindingListeners =
+      List<_BindingListener>.empty(growable: true);
 
   _BindingWidgetState(this._sourceBindings) {
     var addedListeners = List<BindableBase>.empty(growable: true);
@@ -163,7 +164,8 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
       };
 
       binding.source.addPropertyListener(propertyListener);
-      _bindingListeners.add(_BindingListener(false, propertyListener, binding.key));
+      _bindingListeners
+          .add(_BindingListener(false, propertyListener, binding.key));
 
       if (binding.source.getValue(binding.sourceProperty) is NotificationList) {
         var notificationList =
@@ -172,7 +174,8 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
           setState(() {});
         };
         notificationList.addListener(listListener);
-        _bindingListeners.add(_BindingListener(true, listListener, binding.key));
+        _bindingListeners
+            .add(_BindingListener(true, listListener, binding.key));
       }
     }
     addedListeners.add(binding.source);
@@ -198,7 +201,8 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
             binding.source.getValue(binding.sourceProperty) as NotificationList;
         notificationList.removeListener(bl.listener as VoidCallback);
       } else {
-        binding.source.removePropertyListener(bl.listener as PropertyChangedListener);
+        binding.source
+            .removePropertyListener(bl.listener as PropertyChangedListener);
       }
     });
     super.dispose();

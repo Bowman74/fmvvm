@@ -1,4 +1,4 @@
-part of fmvvm;
+part of 'fmvvm.dart';
 
 /// When fmvvm is instatiated, this class is used to create fmmvm service objects.
 ///

@@ -11,7 +11,7 @@ The MVVM model (Model - View - ViewModel) pattern is an alternate pattern to MVC
 -   Inversion of control / dependency injection
 -   viewmodel to view model navigation
 
-A formal explanation of the MVVM pattern [can be found here](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel).
+A formal explanation of the MVVM pattern [can be found here](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel). Flutter lists it as a recommended architecture [Here](https://docs.flutter.dev/app-architecture/guide).
 
 Implementing the MVVM pattern is about having a formal architecture in our applications and separation of concerns. When implementing MVVM in an app I adhere to the following design goals.
 
@@ -28,7 +28,7 @@ Implementing the MVVM pattern is about having a formal architecture in our appli
 Bootstrapping fmvvm is pretty easy. To get a reference to fmvvm add the following line to the dependencies section of the pubspec.yaml file:
 
 ```
-fmvvm: ^0.9.8
+fmvvm: ^0.9.11
 ```
 
 If we need to reference fmvvm components in code, we can use the following import:
@@ -50,10 +50,14 @@ class MyApp extends FmvvmApp {
   void registerComponents(ComponentResolver componentResolver) {
     componentResolver.registerType<_HomePageViewModel>(() {
       return _HomePageViewModel(
-          componentResolver.resolveType<NavigationService>());
+          componentResolver.resolveType<NavigationService>() as NavigationService);
     });
     componentResolver.registerType<_CounterViewModel>(() {
-      return _CounterViewModel();
+      return _CounterViewModel(
+          componentResolver.resolveType<NavigationService>() as NavigationService);
+    });
+    componentResolver.registerType<_ListViewModel>(() {
+      return _ListViewModel();
     });
   }
 
@@ -72,13 +76,15 @@ class MyApp extends FmvvmApp {
     if (settings.name == '_HomePageView') {
       var arguments = settings.arguments ??
           Core.componentResolver
-              .resolveType<NavigationService>()
+              .resolveType<NavigationService>()!
               .createViewModel<_HomePageViewModel>(null);
-      return buildRoute(settings, new _HomePageView(arguments));
+      return buildRoute(settings, _HomePageView(arguments as _HomePageViewModel));
     } else if (settings.name == '_CounterView') {
-      return buildRoute(settings, new _CounterView(settings.arguments));
+      return buildRoute<int>(settings, _CounterView(settings.arguments as _CounterViewModel));
+    } else if (settings.name == '_ListView') {
+      return buildRoute(settings, _RWListView(settings.arguments as _ListViewModel));
     }
-    return null;
+    throw Exception('No route defined for ${settings.name}');
   }
 }
 ```
@@ -94,7 +100,7 @@ Viewmodels are the primary glue that backs a widget. Viewmodels should inherit f
 ```dart
 import 'package:fmvvm/bindings/fmvvm.dart';
 
-class SampleViewModel extends ViewModelBase {
+class SampleViewModel extends ViewModel {
 }
 ```
 
@@ -113,19 +119,21 @@ Creating a new PropertyInfo object should:
 static PropertyInfo someDateTimeProperty = PropertyInfo('someDateTime', DateTime);
 ```
 
-Then a setter and/or getter can be created.
+Then a setter and/or getter can be created. There are generic and non generic versions of getValue and setValue for saving the underlying value.
 
 ```dart
-DateTime get someDateTime => getValue(someDateTimeProperty);
+DateTime get someDateTime => getGenericValue<DateTime>(someDateTimeProperty);
 set someDateTime(DateTime value) => {
-      setValue(someDateTimeProperty, value),
+      setGenericValue<DateTime>(someDateTimeProperty, value),
 };
 
 ```
 
-Notice that the name given to the setter and getter is the same as what was used in the creation of the PropertyInfo. This is not required but the name given the PropertyInfo has to be unique for the class for data binding to work correctly.
+Notice that the name given to the setter and getter is the same as what was used in the creation of the PropertyInfo. This is not required but the name given the PropertyInfo has to be unique for the class for data binding to work correctly. 
 
-Calling setValue will call any listeners if the value did indeed change as it extends the ChangeNotifier class. This is used by data binding.
+**To remove "magic strings" you could also set the names to constants.**
+
+Calling setValue/setGenericValue will call any listeners if the value did indeed change as it extends the ChangeNotifier class. This is used by data binding.
 
 Read only or set only properties can be created by leaving off the setter or getter respectively.
 
@@ -138,7 +146,7 @@ Currently commands are fire and forget, that is to say they do not return a futu
 Here is how a command can be created on a viewmodel that takes no parameters.
 
 ```dart
-Command _doSomethingCommand;
+Command? _doSomethingCommand;
 
 Command get DoSomething {
   _doSomethingCommand ??= Command(() {
@@ -151,7 +159,7 @@ Command get DoSomething {
 A command that takes a parameter would be defined as:
 
 ```dart
-Command _doSomethingCommand;
+Command? _doSomethingCommand;
 
 Command get DoSomething {
   _doSomethingCommand ??= Command((parameter) {
@@ -169,7 +177,7 @@ In many cases the init method is used to do any fetches or other data initializa
 
 ```dart
 @override
-void init(Object parameter) {
+void init(Object? parameter) {
   // Some initialization code for the view model.
 }
 ```
@@ -256,7 +264,7 @@ var myClass = Core.ComponentResolver.resolve<MyClass>();
 
 ## StatelessWidgets
 
-Stateless widgets cannot change, as such they can only get information out of a viewmodel and do not refresh themselves.
+Stateless widgets cannot change, as such they can only get information out of a viewmodel when drawn and do not refresh themselves.
 
 Creating a stateless widget should look like this:
 
@@ -371,7 +379,7 @@ BindingWidget<_HomePageViewModel>(
   bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay, valueConverter: _NumberValueConverter())],
   builder: (bc) => Hero(
     tag: 'countHero',
-    child: Text(BindingWidget.of<_HomePageViewModel>(bc).getValue('counter')),
+    child: Text(BindingWidget.of<_HomePageViewModel>(bc).getGenericValue<String>('counter')),
   ),
 ),
 ```
@@ -388,8 +396,8 @@ That handles getting value changes from the viewmodel to the widget, how about v
 BindingWidget<_HomePageViewModel>(
   bindings: <Binding>[Binding('testBool', bindableBase, _HomePageViewModel.testBoolProperty, bindingDirection: BindingDirection.TwoWay)],
   builder: (c) => Switch(
-    value: BindingWidget.of<_HomePageViewModel>(c).getValue('testBool') as bool,
-    onChanged: BindingWidget.of<_HomePageViewModel>(c).getOnChanged('testBool'),
+    value: BindingWidget.of<_HomePageViewModel>(c).getGenericValue<bool>('testBool'),
+    onChanged: BindingWidget.of<_HomePageViewModel>(c).getOnChanged('testBool') as void Function(String),
   ),
 ),
 ```
@@ -421,11 +429,11 @@ Then in the build method we can use our BindingWidget:
 BindingWidget<_HomePageViewModel>(
   bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay, valueConverter: _NumberValueConverter())],
   builder: (bc) {
-    controller.text = BindingWidget.of<_HomePageViewModel>(bc).getValue('counter');
+    controller.text = BindingWidget.of<_HomePageViewModel>(bc).getGenericValue<String>('counter');
     return TextField(
       style: Theme.of(context).textTheme.display1,
       controller: controller,
-      onChanged: BindingWidget.of<_HomePageViewModel>(bc).getOnChanged('counter'),
+      onChanged: BindingWidget.of<_HomePageViewModel>(bc).getOnChanged('counter') as void Function(String),
     );
   }
 ),
@@ -441,7 +449,7 @@ Commands are functions that we want to call on our viewmodel. In the viewmodels 
 
 ```dart
 floatingActionButton: FloatingActionButton(
-  onPressed: viewModel.incrementCounter.execute,
+  onPressed: () => viewModel.incrementCounter.execute(),
   tooltip: 'Increment',
   child: Icon(Icons.add),
 )
@@ -452,7 +460,7 @@ Commands can also take parameters. Here is an example using a FlatButton widget.
 ```dart
 FlatButton(
   child: Text('Navigate'),
-  onPressed: () {viewModel.navigate.execute(BindingWidget.of<_SomeViewModel>(bc).getValue('someBindingName'));})
+  onPressed: () => {viewModel.navigate.execute(BindingWidget.of<_SomeViewModel>(bc).getGenericValue<String>('someBindingName'));})
 ```
 
 In this case the value from a binding would be passed as a parameter to the command.
@@ -467,11 +475,11 @@ First we create a class that can convert back and forth:
 
 ```dart
 class NumberValueConverter implements ValueConverter {
-  Object convert(Object source, Object value, {Object parameter}) {
+  Object convert(Object source, Object? value, {Object? parameter}) {
     return value.toString();
   }
 
-  Object convertBack(Object source, Object value, {Object parameter}) {
+  Object convertBack(Object source, Object? value, {Object? parameter}) {
     return int.tryParse(value) ?? 0;
   }
 }
@@ -517,21 +525,20 @@ In order for all this to work a couple of things need to be true.
 Here is how those routes can be set up in a class that extends FmvvmApp:
 
 ```dart
-  @override
-  Route getRoutes(RouteSettings settings) {
-    if (settings.name == '_HomePageView') {
-      var arguments = settings.arguments ??
-          Core.componentResolver
-              .resolveType<NavigationService>()
-              .createViewModel<_HomePageViewModel>(null);
-      return buildRoute(settings, new _HomePageView(arguments));
-    } else if (settings.name == '_CounterView') {
-      return buildRoute(settings, new _CounterView(settings.arguments));
-    } else if (settings.name == '_ListView') {
-      return buildRoute(settings, new _RWListView(settings.arguments));
-    }
-    return null;
+@override
+Route getRoutes(RouteSettings settings) {
+  if (settings.name == '_HomePageView') {
+    var arguments = settings.arguments ??
+        Core.componentResolver
+            .resolveType<NavigationService>()!             .createViewModel<_HomePageViewModel>(null);
+    return buildRoute(settings, _HomePageView(arguments as _HomePageViewModel));
+  } else if (settings.name == '_CounterView') {
+    return buildRoute<int>(settings, _CounterView(settings.arguments as _CounterViewModel));
+  } else if (settings.name == '_ListView') {
+    return buildRoute(settings, _RWListView(settings.arguments as _ListViewModel));
   }
+  throw Exception('No route defined for ${settings.name}');
+}
 ```
 
 A few things to notice, we don't normally do anything to create or pass an instance of the viewmodel to the widget in the route. This is done for us by the NavigationService's navigate method. It is sent with the settings.arguments. The exception to this is the initialRoute, when the app first starts. This isn't navigated to using the NavigationService.navigate method. For this we have to check and see that the settings.arguments are null and if so set it to an instance of the viewmodel using the NavigationService's createViewModel method.
@@ -543,7 +550,18 @@ The buildRoute method is provided for us as part of the FmvvmApp base class.
 Navigating back is as simple as calling:
 
 ```dart
-NavigationService.navigateBack();
+NavigationService.navigateBack.execute();
+```
+
+When navigating back the navigation service sends a message refresh the view context on the last page displayed. If this is not done the fmvvm navigation service will not work correctly. If pushing a new view onto the stack and not using the fmvvm navigation service, you can ensure this message is sent manually using the whenComplete method. For example:
+
+```dart
+await Navigator.of(_viewContext!)
+  .pushNamed(routeName, arguments: _viewModel).whenComplete( () {
+    Core.componentResolver
+      .resolveType<MessageService>()!
+      .publish(Message(Constants.newBuildContext, context as Object));
+  });
 ```
 
 ### Navigating to a viewmodel for a result
@@ -563,7 +581,7 @@ In some method we are using the navigationService to navigate to the SomeOtherVi
 In SomeOtherViewModel we might also have code like this:
 
 ```dart
-Command _navigateBack;
+Command? _navigateBack;
 
 Command get navigateBack {
   _navigateBack ??= Command(() {
@@ -575,19 +593,24 @@ Command get navigateBack {
 
 In this case the navigateBack Command would pop the current viewmodel off the stack (SomeOtherViewModel) and return back the value of 55 to the calling view model.
 
-Often there may be a view with a back button or a hardware back button that is pressed on an Android device. To handle this we can use a WillPopScope widget as shown here:
+Often there may be a view with a back button or a hardware back button that is pressed on an Android device. To handle this we can use a PopScope widget as shown here:
 
 ```dart
-WillPopScope(
-  onWillPop: () async {
-    await bindableBase.navigateBack.execute();
-    return false;
+PopScope(
+  canPop: false,
+  onPopInvokedWithResult:  (didPop, result) async {
+    if (didPop) {
+      return;
+    }
+    if (context.mounted) {
+      bindableBase.navigateBack.execute();
+    }
   },
   child: ''' Some child widget structure
 ),
 ```
 
-In this case we use the onWillPop event of the WillPopScope widget to determine that the user pressed the navigation bar back button or a hardware back button. In the event handler we call the navigate back method that in our viewmodel will call navigateBackWithResult. We then return false in the onWillPop event handler because our navigateBack Command already did the back navigation and we don't want to do it again.
+In this case we use the onPopInvokedWithResult event of the PopScope widget to determine that the user pressed the navigation bar back button or a hardware back button. In the event handler we call the navigate back method that in our viewmodel will call navigateBackWithResult. We then return false in the onWillPop event handler because our navigateBack Command already did the back navigation and we don't want to do it again.
 
 ## Lists
 
@@ -725,13 +748,15 @@ var subscription = Subscription("SomeMessageName", ((p) {
     }));
 ```
 
+**As with property name strings, the message names can use constants to avoid "magic strings"**
+
 Then to register the subscription.
 
 ```dart
 _messageService.subscribe(subscription);
 ```
 
-** 0-n different subscriptions can be added for the same message name. **
+**0-n different subscriptions can be added for the same message name.**
 
 ### Removing a subscription
 
@@ -785,9 +810,7 @@ Here is a sample app that puts together the concepts we have discussed.
 ```dart
 import 'package:flutter/material.dart';
 
-import 'package:fmvvm/bindings/bindings.dart';
 import 'package:fmvvm/fmvvm.dart';
-import 'package:fmvvm/interfaces/interfaces.dart';
 
 void main() => runApp(MyApp());
 
@@ -796,11 +819,11 @@ class MyApp extends FmvvmApp {
   void registerComponents(ComponentResolver componentResolver) {
     componentResolver.registerType<_HomePageViewModel>(() {
       return _HomePageViewModel(
-          componentResolver.resolveType<NavigationService>());
+          componentResolver.resolveType<NavigationService>() as NavigationService);
     });
     componentResolver.registerType<_CounterViewModel>(() {
       return _CounterViewModel(
-          componentResolver.resolveType<NavigationService>());
+          componentResolver.resolveType<NavigationService>() as NavigationService);
     });
     componentResolver.registerType<_ListViewModel>(() {
       return _ListViewModel();
@@ -822,23 +845,22 @@ class MyApp extends FmvvmApp {
     if (settings.name == '_HomePageView') {
       var arguments = settings.arguments ??
           Core.componentResolver
-              .resolveType<NavigationService>()
+              .resolveType<NavigationService>()!
               .createViewModel<_HomePageViewModel>(null);
-      return buildRoute(settings, new _HomePageView(arguments));
+      return buildRoute(settings, _HomePageView(arguments as _HomePageViewModel));
     } else if (settings.name == '_CounterView') {
-      return buildRoute<int>(settings, new _CounterView(settings.arguments));
+      return buildRoute<int>(settings, _CounterView(settings.arguments as _CounterViewModel));
     } else if (settings.name == '_ListView') {
-      return buildRoute(settings, new _RWListView(settings.arguments));
+      return buildRoute(settings, _RWListView(settings.arguments as _ListViewModel));
     }
-    return null;
+    throw Exception('No route defined for ${settings.name}');
   }
 }
 
 class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
-  _HomePageView(ViewModel viewModel, {Key key, this.title})
+  _HomePageView(_HomePageViewModel viewModel, {Key? key})
       : super(viewModel, key: key);
 
-  final String title;
 
   @override
   _HomePageViewState createState() => _HomePageViewState(bindableBase);
@@ -847,8 +869,8 @@ class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
 class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
   _HomePageViewState(_HomePageViewModel viewModel) : super(viewModel, true);
 
-  TextEditingController controller;
-  TextEditingController controller2;
+  TextEditingController? controller;
+  TextEditingController? controller2;
 
   @override
   void initState() {
@@ -882,7 +904,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               builder: (bc) => Hero(
                     tag: 'countHero',
                     child: Text(BindingWidget.of<_HomePageViewModel>(bc)
-                        .getValue('counter')),
+                        .getGenericValue<String>('counter')),
                   ),
             ),
             BindingWidget<_HomePageViewModel>(
@@ -893,15 +915,15 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                       valueConverter: _NumberValueConverter())
                 ],
                 builder: (bc) {
-                  controller.text = BindingWidget.of<_HomePageViewModel>(bc)
-                      .getValue('counter');
-                  controller.selection = new TextSelection.collapsed(
-                      offset: controller.text.length);
+                  controller!.text = BindingWidget.of<_HomePageViewModel>(bc)
+                      .getGenericValue<String>('counter');
+                  controller!.selection = TextSelection.collapsed(
+                      offset: controller!.text.length);
                   return TextField(
-                    style: Theme.of(context).textTheme.display1,
+                    style: Theme.of(context).textTheme.headlineMedium,
                     controller: controller,
                     onChanged: BindingWidget.of<_HomePageViewModel>(bc)
-                        .getOnChanged('counter'),
+                        .getOnChanged('counter') as void Function(String),
                   );
                 }),
             BindingWidget<_HomePageViewModel>(
@@ -913,15 +935,15 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                 ],
                 builder: (bc) {
                   var controllerText = BindingWidget.of<_HomePageViewModel>(bc)
-                      .getValue('counter') as String;
-                  controller2.text = controllerText;
-                  controller2.selection = new TextSelection.collapsed(
+                      .getGenericValue<String>('counter');
+                  controller2!.text = controllerText;
+                  controller2!.selection = TextSelection.collapsed(
                       offset: controllerText.length);
                   return TextField(
-                    style: Theme.of(context).textTheme.display1,
+                    style: Theme.of(context).textTheme.headlineMedium,
                     controller: controller2,
                     onChanged: BindingWidget.of<_HomePageViewModel>(bc)
-                        .getOnChanged('counter'),
+                        .getOnChanged('counter') as void Function(String),
                   );
                 }),
             BindingWidget<_HomePageViewModel>(
@@ -932,9 +954,9 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               ],
               builder: (c) => Switch(
                     value: BindingWidget.of<_HomePageViewModel>(c)
-                        .getValue('testBool') as bool,
+                        .getGenericValue<bool>('testBool'),
                     onChanged: BindingWidget.of<_HomePageViewModel>(c)
-                        .getOnChanged('testBool'),
+                        .getOnChanged('testBool') as void Function(bool),
                   ),
             ),
             BindingWidget<_HomePageViewModel>(
@@ -946,21 +968,21 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               builder: (c) => Expanded(
                     child: Switch(
                       value: BindingWidget.of<_HomePageViewModel>(c)
-                          .getValue('testBool') as bool,
+                          .getGenericValue<bool>('testBool'),
                       onChanged: BindingWidget.of<_HomePageViewModel>(c)
-                          .getOnChanged('testBool'),
+                          .getOnChanged('testBool') as void Function(bool),
                     ),
                   ),
             ),
-            FlatButton(
-                child: Text(
+            TextButton(
+                child: const Text(
                   'Go to Count and add 1',
                 ),
                 onPressed: () {
                   bindableBase.viewValueAddOne.execute();
                 }),
-            FlatButton(
-                child: Text(
+            TextButton(
+                child: const Text(
                   'Go to Read/Write List',
                 ),
                 onPressed: () {
@@ -979,7 +1001,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
 }
 
 class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
-  _CounterView(_CounterViewModel viewModel, {Key key})
+  _CounterView(_CounterViewModel viewModel, {Key? key})
       : super(viewModel, true, key: key);
 
   @override
@@ -989,10 +1011,15 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
         appBar: AppBar(
           title: Text('Current Count'),
         ),
-        body: WillPopScope(
-            onWillPop: () async {
-              await bindableBase.navigateBack.execute();
-              return false;
+        body: PopScope(
+            canPop: false,
+            onPopInvokedWithResult:  (didPop, result) async {
+              if (didPop) {
+                return;
+              }
+              if (context.mounted) {
+                bindableBase.navigateBack.execute();
+              }
             },
             child: Center(
               child: Column(
@@ -1010,7 +1037,7 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
                     builder: (bc) => Hero(
                           tag: 'countHero',
                           child: Text(BindingWidget.of<_CounterViewModel>(bc)
-                              .getValue('counter')),
+                              .getGenericValue<String>('counter')),
                         ),
                   ),
                 ],
@@ -1020,10 +1047,8 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
 }
 
 class _RWListView extends FmvvmStatefulWidget<_ListViewModel> {
-  _RWListView(ViewModel viewModel, {Key key, this.title})
+  _RWListView(_ListViewModel viewModel, {Key? key})
       : super(viewModel, key: key);
-
-  final String title;
 
   @override
   _RWListState createState() => _RWListState(bindableBase);
@@ -1052,12 +1077,11 @@ class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
         builder: (bc) => ListView.builder(
               shrinkWrap: true,
               padding: const EdgeInsets.all(20.0),
-              itemCount: (BindingWidget.of<_ListViewModel>(bc).getValue('list')
-                      as NotificationList)
+              itemCount: (BindingWidget.of<_ListViewModel>(bc).getGenericValue<NotificationList>('list'))
                   .length,
               itemBuilder: (context, position) {
                 return _ListRowWidget((BindingWidget.of<_ListViewModel>(bc)
-                    .getValue('list') as NotificationList)[position]);
+                    .getGenericValue<NotificationList>('list'))[position]);
               },
             ),
       ),
@@ -1089,45 +1113,45 @@ class _HomePageViewModel extends ViewModel {
 
   static PropertyInfo counterProperty = PropertyInfo('counter', int);
 
-  int get counter => getValue(counterProperty);
-  set counter(int value) => setValue(counterProperty, value);
+  int get counter => getGenericValue<int>(counterProperty);
+  set counter(int value) => setGenericValue<int>(counterProperty, value);
 
   static PropertyInfo currentDateProperty = PropertyInfo('currentDate', int);
 
-  DateTime get currentDate => getValue(currentDateProperty);
-  set currentDate(DateTime value) => setValue(currentDateProperty, value);
+  DateTime get currentDate => getGenericValue<DateTime>(currentDateProperty);
+  set currentDate(DateTime value) => setGenericValue<DateTime>(currentDateProperty, value);
 
   static PropertyInfo testBoolProperty = PropertyInfo('testBool', bool, false);
 
-  bool get testBool => getValue(testBoolProperty);
-  set testBool(bool value) => setValue(testBoolProperty, value);
+  bool get testBool => getGenericValue<bool>(testBoolProperty);
+  set testBool(bool value) => setGenericValue<bool>(testBoolProperty, value);
 
-  Command _incrementCounter;
+  Command? _incrementCounter;
 
   Command get incrementCounter {
     _incrementCounter ??= Command(() {
       counter++;
     });
-    return _incrementCounter;
+    return _incrementCounter!;
   }
 
-  Command _navigate;
+  Command? _navigate;
 
   Command get viewValueAddOne {
     _navigate ??= Command(() async {
       counter = await _navigationService
-          .navigateForResult<int, _CounterViewModel>(parameter: counter);
+          .navigateForResult<int, _CounterViewModel>(parameter: counter) as int;
     });
-    return _navigate;
+    return _navigate!;
   }
 
-  Command _goToRWList;
+  Command? _goToRWList;
 
   Command get goToRWList {
     _goToRWList ??= Command(() {
       _navigationService.navigate<_ListViewModel>();
     });
-    return _goToRWList;
+    return _goToRWList!;
   }
 }
 
@@ -1137,20 +1161,20 @@ class _CounterViewModel extends ViewModel {
   final NavigationService _navigationService;
 
   @override
-  void init(Object parameter) {
+  void init(Object? parameter) {
     setValue(counterProperty, parameter);
   }
 
   static PropertyInfo counterProperty = PropertyInfo('counter', int);
-  int get counter => getValue(counterProperty);
+  int get counter => getGenericValue<int>(counterProperty);
 
-  Command _navigateBack;
+  Command? _navigateBack;
 
   Command get navigateBack {
     _navigateBack ??= Command(() {
       _navigationService.navigateBackWithResult(counter + 1);
     });
-    return _navigateBack;
+    return _navigateBack!;
   }
 }
 
@@ -1162,17 +1186,17 @@ class _ListViewModel extends ViewModel {
   }
   static PropertyInfo myListProperty = PropertyInfo('myList', NotificationList);
 
-  NotificationList<_ListItem> get myList => getValue(myListProperty);
+  NotificationList<_ListItem> get myList => getGenericValue<NotificationList<_ListItem>>(myListProperty);
   set myList(NotificationList<_ListItem> value) =>
-      setValue(myListProperty, value);
+      setGenericValue<NotificationList<_ListItem>>(myListProperty, value);
 
-  Command _addRow;
+  Command? _addRow;
 
   Command get addRow {
     _addRow ??= Command(() {
       myList.add(_ListItem("Another", "Item"));
     });
-    return _addRow;
+    return _addRow!;
   }
 }
 
@@ -1183,22 +1207,22 @@ class _ListItem extends BindableBase {
   }
   static PropertyInfo lineOneProperty = PropertyInfo('lineOne', String);
 
-  String get lineOne => getValue(lineOneProperty);
-  set lineOne(String value) => setValue(lineOneProperty, value);
+  String get lineOne => getGenericValue<String>(lineOneProperty);
+  set lineOne(String value) => setGenericValue<String>(lineOneProperty, value);
 
   static PropertyInfo lineTwoProperty = PropertyInfo('lineTwo', String);
 
-  String get lineTwo => getValue(lineTwoProperty);
-  set lineTwo(String value) => setValue(lineTwoProperty, value);
+  String get lineTwo => getGenericValue<String>(lineTwoProperty);
+  set lineTwo(String value) => setGenericValue<String>(lineTwoProperty, value);
 }
 
 class _NumberValueConverter implements ValueConverter {
-  Object convert(Object source, Object value, {Object parameter}) {
+  Object convert(Object source, Object? value, {Object? parameter}) {
     return value.toString();
   }
 
-  Object convertBack(Object source, Object value, {Object parameter}) {
-    return int.tryParse(value) ?? 0;
+  Object convertBack(Object source, Object? value, {Object? parameter}) {
+    return int.tryParse(value as String) ?? 0;
   }
 }
 ```

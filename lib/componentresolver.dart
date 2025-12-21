@@ -1,12 +1,11 @@
-part of fmvvm;
+part of 'fmvvm.dart';
 
 /// The default fmvvm dependency injection/IoC implementation.
 class ComponentResolver {
-  ComponentResolver() {
-    
-  }
+  ComponentResolver() {}
 
-  static List<_DependencyRegistration> _dependencyRegistrations = List<_DependencyRegistration>.empty(growable: true);
+  static List<_DependencyRegistration> _dependencyRegistrations =
+      List<_DependencyRegistration>.empty(growable: true);
 
   /// Resolve a type registered with the contianer specified by [targetType].
   Object? resolve(Type targetType) {
@@ -52,7 +51,6 @@ class ComponentResolver {
   /// The [typeCreationFunction] is a reference to a function that should create an
   /// instance of this type.
   void registerType<T>(Function factoryMethod) {
-
     if (_dependencyRegistrations
         .any((r) => identical(r.typeRegistered, Utilities.typeOf<T>()))) {
       throw StateError("The same type cannot be registered twice");
@@ -68,7 +66,8 @@ class ComponentResolver {
 
   /// Removes all registrations from the dependency injection container.
   void resetRegistrations() {
-    _dependencyRegistrations = List<_DependencyRegistration>.empty(growable: true);
+    _dependencyRegistrations =
+        List<_DependencyRegistration>.empty(growable: true);
   }
 }
 
@@ -76,8 +75,8 @@ class ComponentResolver {
 class _DependencyRegistration {
   _DependencyRegistration(
       _RegistrationType registrationType, Type typeRegistered,
-      {Object? registeredInstance, Function? factoryMethod}):
-        _registrationType = registrationType,
+      {Object? registeredInstance, Function? factoryMethod})
+      : _registrationType = registrationType,
         _typeRegistered = typeRegistered,
         _registeredInstance = registeredInstance,
         _factoryMethod = factoryMethod {

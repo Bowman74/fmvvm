@@ -21,7 +21,7 @@ abstract class BindableBase extends ChangeNotifier {
     }
   }
 
-    /// Gives a new value to a property.
+  /// Gives a new value to a property.
   @protected
   void setGenericValue<T>(PropertyInfo propertyInfo, T value) {
     if (_fieldManager.getGenericValue<T?>(propertyInfo) != value) {

@@ -47,7 +47,6 @@ void main() {
   });
 
   test('NotificationList can add an item', () {
-
     var filledList = NotificationList<_TestClass>();
     var class1 = _TestClass(1, "first item");
 
@@ -58,7 +57,7 @@ void main() {
     filledList.singleWhere((l) => l.id == 1);
   });
 
-    test('NotificationList can add multiple items', () {
+  test('NotificationList can add multiple items', () {
     var sourceList = List<_TestClass>.empty(growable: true);
 
     var class1 = _TestClass(1, "first item");
@@ -78,7 +77,6 @@ void main() {
   });
 
   test('NotificationList can delete an item', () {
-
     var filledList = NotificationList<_TestClass>();
     var class1 = _TestClass(1, "first item");
 

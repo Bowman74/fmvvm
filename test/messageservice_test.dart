@@ -14,13 +14,13 @@ void main() {
     var subscription = Subscription(messageName, expectAsync1((e) {
       expect(e, equals(expectedMessage));
       t!.cancel();
-        }));
+    }));
 
     messageService.subscribe(subscription);
 
     var message = Message(messageName, expectedMessage);
 
-    t = new Timer(new Duration(seconds: 3), () {
+    t = Timer(Duration(seconds: 3), () {
       fail('event not fired in time');
     });
 
@@ -37,7 +37,7 @@ void main() {
 
     var subscription = Subscription(messageName, expectAsync1((e) {
       t!.cancel();
-          expect(e, equals(notCalledMessage));
+      expect(e, equals(notCalledMessage));
     }));
 
     messageService.subscribe(subscription);
@@ -46,7 +46,7 @@ void main() {
 
     var message = Message(messageName, expectedMessage);
 
-    t = new Timer(new Duration(seconds: 1), () {
+    t = Timer(Duration(seconds: 1), () {
       subscription.messageHandler(notCalledMessage);
     });
 
@@ -64,7 +64,7 @@ void main() {
 
     var subscription = Subscription(messageName, expectAsync1((e) {
       t!.cancel();
-          expect(e, equals(notCalledMessage));
+      expect(e, equals(notCalledMessage));
     }));
 
     messageService.subscribe(subscription);
@@ -73,7 +73,7 @@ void main() {
 
     var message = Message(messageName, expectedMessage);
 
-    t = new Timer(new Duration(seconds: 1), () {
+    t = Timer(Duration(seconds: 1), () {
       subscription.messageHandler(notCalledMessage);
     });
 
@@ -90,20 +90,20 @@ void main() {
     var subscription1 = Subscription(messageName, expectAsync1((e) {
       expect(e, equals(expectedMessage));
       t!.cancel();
-        }));
+    }));
 
     messageService.subscribe(subscription1);
 
     var subscription2 = Subscription(messageName, expectAsync1((e) {
       expect(e, equals(expectedMessage));
       t!.cancel();
-        }));
+    }));
 
     messageService.subscribe(subscription2);
 
     var message = Message(messageName, expectedMessage);
 
-    t = new Timer(new Duration(seconds: 3), () {
+    t = Timer(Duration(seconds: 3), () {
       fail('event not fired in time');
     });
 

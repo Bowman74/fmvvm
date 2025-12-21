@@ -1,4 +1,4 @@
-part of fmvvm;
+part of 'fmvvm.dart';
 
 /// Default fmvvm implementation of the ViewLocator interface.
 class FmvvmViewLocator implements ViewLocator {

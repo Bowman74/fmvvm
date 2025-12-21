@@ -1,4 +1,4 @@
-part of fmvvm;
+part of 'fmvvm.dart';
 
 /// Default implementation of the fmvvm NavigationService interface.
 class FmvvmNavigationService implements NavigationService {
@@ -16,13 +16,14 @@ class FmvvmNavigationService implements NavigationService {
 
     var routeName = Core._viewLocator!.getViewFromViewModelType<V>();
     var context = _viewContext;
-    
+
     await Navigator.of(_viewContext!)
-        .pushNamed(routeName, arguments: _viewModel).whenComplete( () {
-          Core.componentResolver
+        .pushNamed(routeName, arguments: _viewModel)
+        .whenComplete(() {
+      Core.componentResolver
           .resolveType<MessageService>()!
           .publish(Message(Constants.newBuildContext, context as Object));
-        });
+    });
 
     _viewModel.dispose();
   }
@@ -41,11 +42,12 @@ class FmvvmNavigationService implements NavigationService {
     var context = _viewContext;
 
     var returnValue = await Navigator.of(_viewContext!)
-        .pushNamed<R>(routeName, arguments: _viewModel).whenComplete( () {
-          Core.componentResolver
+        .pushNamed<R>(routeName, arguments: _viewModel)
+        .whenComplete(() {
+      Core.componentResolver
           .resolveType<MessageService>()!
           .publish(Message(Constants.newBuildContext, context as Object));
-        });
+    });
 
     _viewModel.dispose();
 
@@ -57,7 +59,8 @@ class FmvvmNavigationService implements NavigationService {
   /// The [parameter] is a value that will be passed to the new viewmodel's
   /// init method. The Future will be resolved with the ViewModel that is navigated to is
   /// popped from the stack.
-  void navigateAndRemoveCurrent<V extends ViewModel>({Object? parameter}) async {
+  void navigateAndRemoveCurrent<V extends ViewModel>(
+      {Object? parameter}) async {
     ArgumentError.checkNotNull(_viewContext, '_viewContext');
     var _viewModel = createViewModel<V>(parameter);
 
@@ -74,7 +77,8 @@ class FmvvmNavigationService implements NavigationService {
   /// This is called once when fmvvm is initialized. fmvvm uses a single
   /// instance of the navigaiton service throughout the app.
   void initialize() {
-    var messageService = Core.componentResolver.resolveType<MessageService>() as MessageService;
+    var messageService =
+        Core.componentResolver.resolveType<MessageService>() as MessageService;
 
     _subscription = Subscription(Constants.newBuildContext, (c) {
       _viewContext = c as BuildContext?;

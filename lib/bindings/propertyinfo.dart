@@ -44,10 +44,10 @@ class PropertyInfo {
 
   /// A unique id used by fmvvm to tie this propertyinfo to a backing field in a class instance.
   int get id => _id;
-  _setIdentifier(int value) => _id = value;
+  void _setIdentifier(int value) => _id = value;
 
   /// Used by fmvvm to create backing information for this property info.
   FieldData createFieldData() {
-    return new FieldData(_name, id, defaultValue);
+    return FieldData(_name, id, defaultValue);
   }
 }

@@ -5,11 +5,10 @@ class FieldData<T> {
   final String _name;
   final int _id;
 
-  FieldData(String name, int id, T? startingValue):
-    _name = name,
-    _id = id,
-    value = startingValue {
-  }
+  FieldData(String name, int id, T? startingValue)
+      : _name = name,
+        _id = id,
+        value = startingValue {}
 
   /// The name of the property.
   String get name => _name;

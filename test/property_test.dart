@@ -19,7 +19,7 @@ void main() {
     testViewModel.addPropertyListener(expectAsync1((e) {
       expect(e, equals("stringTest"));
       t!.cancel();
-        }));
+    }));
 
     String _expectedValue = 'foo';
 
@@ -36,7 +36,7 @@ void main() {
 
     testViewModel.addListener(expectAsync0(() {
       t!.cancel();
-        }));
+    }));
 
     String _expectedValue = 'foo';
 
@@ -111,7 +111,8 @@ class _TestViewModel extends BindableBase {
   static PropertyInfo referenceTypeTestProperty =
       PropertyInfo('referenceTypeTest', _TestViewModel);
 
-  _TestViewModel? get referenceTypeTest => getValue(referenceTypeTestProperty) as _TestViewModel?;
+  _TestViewModel? get referenceTypeTest =>
+      getValue(referenceTypeTestProperty) as _TestViewModel?;
   set referenceTypeTest(_TestViewModel? value) => {
         setValue(referenceTypeTestProperty, value),
       };

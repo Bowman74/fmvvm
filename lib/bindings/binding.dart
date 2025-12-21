@@ -6,12 +6,11 @@ part of 'bindings.dart';
 class Binding {
   Binding(String key, BindableBase source, PropertyInfo sourceProperty,
       {BindingDirection? bindingDirection,
-      fmvvm_interfaces.ValueConverter? valueConverter}):
-       _key = key,
-       this.source = source,
-       _sourceProperty = sourceProperty,
-       _bindingDirection = bindingDirection ?? BindingDirection.TwoWay {
-
+      fmvvm_interfaces.ValueConverter? valueConverter})
+      : _key = key,
+        this.source = source,
+        _sourceProperty = sourceProperty,
+        _bindingDirection = bindingDirection ?? BindingDirection.TwoWay {
     _valueConverter = valueConverter;
   }
 

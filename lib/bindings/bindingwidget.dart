@@ -137,7 +137,8 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
 /// A state object for use internally by fmvvm for BindingWidgets.
 class _BindingWidgetState<T> extends State<BindingWidget> {
   final List<Binding> _sourceBindings;
-  final List<_BindingListener> _bindingListeners = List<_BindingListener>.empty(growable: true);
+  final List<_BindingListener> _bindingListeners =
+      List<_BindingListener>.empty(growable: true);
 
   _BindingWidgetState(this._sourceBindings) {
     var addedListeners = List<BindableBase>.empty(growable: true);
@@ -163,7 +164,8 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
       };
 
       binding.source.addPropertyListener(propertyListener);
-      _bindingListeners.add(_BindingListener(false, propertyListener, binding.key));
+      _bindingListeners
+          .add(_BindingListener(false, propertyListener, binding.key));
 
       if (binding.source.getValue(binding.sourceProperty) is NotificationList) {
         var notificationList =
@@ -172,7 +174,8 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
           setState(() {});
         };
         notificationList.addListener(listListener);
-        _bindingListeners.add(_BindingListener(true, listListener, binding.key));
+        _bindingListeners
+            .add(_BindingListener(true, listListener, binding.key));
       }
     }
     addedListeners.add(binding.source);
@@ -198,7 +201,8 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
             binding.source.getValue(binding.sourceProperty) as NotificationList;
         notificationList.removeListener(bl.listener as VoidCallback);
       } else {
-        binding.source.removePropertyListener(bl.listener as PropertyChangedListener);
+        binding.source
+            .removePropertyListener(bl.listener as PropertyChangedListener);
       }
     });
     super.dispose();

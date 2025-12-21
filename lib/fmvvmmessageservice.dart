@@ -17,7 +17,6 @@ class FmvvmMessageService extends MessageService {
   /// If there are no subscripbers to the messange name, this method will do nothing.
   @override
   void publish(Message message) {
-
     if (_messengers.any((m) => m.name == message.name)) {
       var messenger = _messengers.singleWhere((m) => m.name == message.name);
       messenger.streamController.add(message.parameter);
@@ -27,7 +26,6 @@ class FmvvmMessageService extends MessageService {
   /// Adds a subscription to receive notifications when events occur.
   @override
   void subscribe(Subscription subscription) {
-
     _subscriptions.add(subscription);
     if (!_messengers.any((m) => m.name == subscription.name)) {
       _messengers.add(_Messenger(subscription.name));
@@ -48,7 +46,6 @@ class FmvvmMessageService extends MessageService {
   /// If the subscription does not exist this method does nothing.
   @override
   void unsubscribe(Subscription subscription) {
-
     _subscriptions.remove(subscription);
 
     if (!_subscriptions.any((s) => s.name == subscription.name)) {
@@ -73,8 +70,8 @@ class FmvvmMessageService extends MessageService {
 }
 
 class _Messenger {
-  _Messenger(String name):this.name = name {}
-  
+  _Messenger(String name) : this.name = name {}
+
   StreamController _streamController = StreamController.broadcast();
 
   String name;

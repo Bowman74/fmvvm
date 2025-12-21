@@ -14,7 +14,7 @@ void main() {
     var subscription = Subscription(messageName, expectAsync1((e) {
       expect(e, equals(expectedMessage));
       t!.cancel();
-        }));
+    }));
 
     messageService.subscribe(subscription);
 
@@ -37,7 +37,7 @@ void main() {
 
     var subscription = Subscription(messageName, expectAsync1((e) {
       t!.cancel();
-          expect(e, equals(notCalledMessage));
+      expect(e, equals(notCalledMessage));
     }));
 
     messageService.subscribe(subscription);
@@ -64,7 +64,7 @@ void main() {
 
     var subscription = Subscription(messageName, expectAsync1((e) {
       t!.cancel();
-          expect(e, equals(notCalledMessage));
+      expect(e, equals(notCalledMessage));
     }));
 
     messageService.subscribe(subscription);
@@ -90,14 +90,14 @@ void main() {
     var subscription1 = Subscription(messageName, expectAsync1((e) {
       expect(e, equals(expectedMessage));
       t!.cancel();
-        }));
+    }));
 
     messageService.subscribe(subscription1);
 
     var subscription2 = Subscription(messageName, expectAsync1((e) {
       expect(e, equals(expectedMessage));
       t!.cancel();
-        }));
+    }));
 
     messageService.subscribe(subscription2);
 

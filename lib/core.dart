@@ -22,7 +22,8 @@ class Core {
     _messageService = startRegistrations.getMessageService();
 
     _componentResolver!.registerInstance<ViewLocator>(_viewLocator!);
-    _componentResolver!.registerInstance<NavigationService>(_navigationService!);
+    _componentResolver!
+        .registerInstance<NavigationService>(_navigationService!);
     _componentResolver!.registerInstance<MessageService>(_messageService!);
 
     _navigationService!.initialize();

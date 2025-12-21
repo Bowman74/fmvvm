@@ -8,12 +8,12 @@ class MyApp extends FmvvmApp {
   @override
   void registerComponents(ComponentResolver componentResolver) {
     componentResolver.registerType<_HomePageViewModel>(() {
-      return _HomePageViewModel(
-          componentResolver.resolveType<NavigationService>() as NavigationService);
+      return _HomePageViewModel(componentResolver
+          .resolveType<NavigationService>() as NavigationService);
     });
     componentResolver.registerType<_CounterViewModel>(() {
-      return _CounterViewModel(
-          componentResolver.resolveType<NavigationService>() as NavigationService);
+      return _CounterViewModel(componentResolver
+          .resolveType<NavigationService>() as NavigationService);
     });
     componentResolver.registerType<_ListViewModel>(() {
       return _ListViewModel();
@@ -37,11 +37,14 @@ class MyApp extends FmvvmApp {
           Core.componentResolver
               .resolveType<NavigationService>()!
               .createViewModel<_HomePageViewModel>(null);
-      return buildRoute(settings, _HomePageView(arguments as _HomePageViewModel));
+      return buildRoute(
+          settings, _HomePageView(arguments as _HomePageViewModel));
     } else if (settings.name == '_CounterView') {
-      return buildRoute<int>(settings, _CounterView(settings.arguments as _CounterViewModel));
+      return buildRoute<int>(
+          settings, _CounterView(settings.arguments as _CounterViewModel));
     } else if (settings.name == '_ListView') {
-      return buildRoute(settings, _RWListView(settings.arguments as _ListViewModel));
+      return buildRoute(
+          settings, _RWListView(settings.arguments as _ListViewModel));
     }
     throw Exception('No route defined for ${settings.name}');
   }
@@ -50,7 +53,6 @@ class MyApp extends FmvvmApp {
 class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
   _HomePageView(_HomePageViewModel viewModel, {Key? key})
       : super(viewModel, key: key);
-
 
   @override
   _HomePageViewState createState() => _HomePageViewState(bindableBase);
@@ -92,10 +94,10 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                     valueConverter: _NumberValueConverter())
               ],
               builder: (bc) => Hero(
-                    tag: 'countHero',
-                    child: Text(BindingWidget.of<_HomePageViewModel>(bc)
-                        .getGenericValue<String>('counter')),
-                  ),
+                tag: 'countHero',
+                child: Text(BindingWidget.of<_HomePageViewModel>(bc)
+                    .getGenericValue<String>('counter')),
+              ),
             ),
             BindingWidget<_HomePageViewModel>(
                 bindings: <Binding>[
@@ -107,8 +109,8 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                 builder: (bc) {
                   controller!.text = BindingWidget.of<_HomePageViewModel>(bc)
                       .getGenericValue<String>('counter');
-                  controller!.selection = TextSelection.collapsed(
-                      offset: controller!.text.length);
+                  controller!.selection =
+                      TextSelection.collapsed(offset: controller!.text.length);
                   return TextField(
                     style: Theme.of(context).textTheme.headlineMedium,
                     controller: controller,
@@ -127,8 +129,8 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                   var controllerText = BindingWidget.of<_HomePageViewModel>(bc)
                       .getGenericValue<String>('counter');
                   controller2!.text = controllerText;
-                  controller2!.selection = TextSelection.collapsed(
-                      offset: controllerText.length);
+                  controller2!.selection =
+                      TextSelection.collapsed(offset: controllerText.length);
                   return TextField(
                     style: Theme.of(context).textTheme.headlineMedium,
                     controller: controller2,
@@ -143,11 +145,11 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                     bindingDirection: BindingDirection.TwoWay)
               ],
               builder: (c) => Switch(
-                    value: BindingWidget.of<_HomePageViewModel>(c)
-                        .getGenericValue<bool>('testBool'),
-                    onChanged: BindingWidget.of<_HomePageViewModel>(c)
-                        .getOnChanged('testBool') as void Function(bool),
-                  ),
+                value: BindingWidget.of<_HomePageViewModel>(c)
+                    .getGenericValue<bool>('testBool'),
+                onChanged: BindingWidget.of<_HomePageViewModel>(c)
+                    .getOnChanged('testBool') as void Function(bool),
+              ),
             ),
             BindingWidget<_HomePageViewModel>(
               bindings: <Binding>[
@@ -156,13 +158,13 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                     bindingDirection: BindingDirection.TwoWay)
               ],
               builder: (c) => Expanded(
-                    child: Switch(
-                      value: BindingWidget.of<_HomePageViewModel>(c)
-                          .getGenericValue<bool>('testBool'),
-                      onChanged: BindingWidget.of<_HomePageViewModel>(c)
-                          .getOnChanged('testBool') as void Function(bool),
-                    ),
-                  ),
+                child: Switch(
+                  value: BindingWidget.of<_HomePageViewModel>(c)
+                      .getGenericValue<bool>('testBool'),
+                  onChanged: BindingWidget.of<_HomePageViewModel>(c)
+                      .getOnChanged('testBool') as void Function(bool),
+                ),
+              ),
             ),
             TextButton(
                 child: const Text(
@@ -203,7 +205,7 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
         ),
         body: PopScope(
             canPop: false,
-            onPopInvokedWithResult:  (didPop, result) async {
+            onPopInvokedWithResult: (didPop, result) async {
               if (didPop) {
                 return;
               }
@@ -225,10 +227,10 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
                           valueConverter: _NumberValueConverter())
                     ],
                     builder: (bc) => Hero(
-                          tag: 'countHero',
-                          child: Text(BindingWidget.of<_CounterViewModel>(bc)
-                              .getGenericValue<String>('counter')),
-                        ),
+                      tag: 'countHero',
+                      child: Text(BindingWidget.of<_CounterViewModel>(bc)
+                          .getGenericValue<String>('counter')),
+                    ),
                   ),
                 ],
               ),
@@ -265,15 +267,16 @@ class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
           Binding('list', bindableBase, _ListViewModel.myListProperty)
         ],
         builder: (bc) => ListView.builder(
-              shrinkWrap: true,
-              padding: const EdgeInsets.all(20.0),
-              itemCount: (BindingWidget.of<_ListViewModel>(bc).getGenericValue<NotificationList>('list'))
-                  .length,
-              itemBuilder: (context, position) {
-                return _ListRowWidget((BindingWidget.of<_ListViewModel>(bc)
-                    .getGenericValue<NotificationList>('list'))[position]);
-              },
-            ),
+          shrinkWrap: true,
+          padding: const EdgeInsets.all(20.0),
+          itemCount: (BindingWidget.of<_ListViewModel>(bc)
+                  .getGenericValue<NotificationList>('list'))
+              .length,
+          itemBuilder: (context, position) {
+            return _ListRowWidget((BindingWidget.of<_ListViewModel>(bc)
+                .getGenericValue<NotificationList>('list'))[position]);
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => bindableBase.addRow.execute(),
@@ -309,7 +312,8 @@ class _HomePageViewModel extends ViewModel {
   static PropertyInfo currentDateProperty = PropertyInfo('currentDate', int);
 
   DateTime get currentDate => getGenericValue<DateTime>(currentDateProperty);
-  set currentDate(DateTime value) => setGenericValue<DateTime>(currentDateProperty, value);
+  set currentDate(DateTime value) =>
+      setGenericValue<DateTime>(currentDateProperty, value);
 
   static PropertyInfo testBoolProperty = PropertyInfo('testBool', bool, false);
 
@@ -376,7 +380,8 @@ class _ListViewModel extends ViewModel {
   }
   static PropertyInfo myListProperty = PropertyInfo('myList', NotificationList);
 
-  NotificationList<_ListItem> get myList => getGenericValue<NotificationList<_ListItem>>(myListProperty);
+  NotificationList<_ListItem> get myList =>
+      getGenericValue<NotificationList<_ListItem>>(myListProperty);
   set myList(NotificationList<_ListItem> value) =>
       setGenericValue<NotificationList<_ListItem>>(myListProperty, value);
 

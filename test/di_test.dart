@@ -69,10 +69,12 @@ void main() {
       return _SimpleConstructor();
     });
     container.registerType<_ComplexConstructor>(() {
-      return _ComplexConstructor(container.resolveType<_SimpleConstructor>() as _SimpleConstructor);
+      return _ComplexConstructor(
+          container.resolveType<_SimpleConstructor>() as _SimpleConstructor);
     });
 
-    var retrievedInstance = container.resolveType<_ComplexConstructor>() as _ComplexConstructor;
+    var retrievedInstance =
+        container.resolveType<_ComplexConstructor>() as _ComplexConstructor;
 
     expect(retrievedInstance, isNotNull);
     expect(retrievedInstance.childObject, isNotNull);
@@ -97,7 +99,8 @@ class _ComplexConstructor extends BindableBase {
   static PropertyInfo childObjectProperty =
       PropertyInfo('childObject', _SimpleConstructor);
 
-  _SimpleConstructor get childObject => getValue(childObjectProperty) as _SimpleConstructor;
+  _SimpleConstructor get childObject =>
+      getValue(childObjectProperty) as _SimpleConstructor;
   set childObject(_SimpleConstructor value) => {
         setValue(childObjectProperty, value),
       };

@@ -7,7 +7,8 @@ part of 'bindings.dart';
 /// All it requires is that the bindings are setup against BinableBase
 /// objects'
 class BindingWidget<T extends BindableBase> extends StatefulWidget {
-  const BindingWidget({Key? key, required this.bindings, required this.builder}) : super(key: key);
+  const BindingWidget({Key? key, required this.bindings, required this.builder})
+      : super(key: key);
 
   final Widget Function(BuildContext context) builder;
   final List<Binding> bindings;
@@ -139,19 +140,19 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
   late List<Binding> _sourceBindings;
   final List<_BindingListener> _bindingListeners =
       List<_BindingListener>.empty(growable: true);
-  
+
   @override
-    void initState() {
-      super.initState();
+  void initState() {
+    super.initState();
 
-      _sourceBindings = widget.bindings;
+    _sourceBindings = widget.bindings;
 
-      var addedListeners = List<BindableBase>.empty(growable: true);
+    var addedListeners = List<BindableBase>.empty(growable: true);
 
-      for (var b in _sourceBindings) {
-        _createListener(b, addedListeners);
-      }
+    for (var b in _sourceBindings) {
+      _createListener(b, addedListeners);
     }
+  }
 
   /// Creates a property listenter for a binding.
   ///
@@ -178,6 +179,7 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
         void listListener() {
           setState(() {});
         }
+
         notificationList.addListener(listListener);
         _bindingListeners
             .add(_BindingListener(true, listListener, binding.key));

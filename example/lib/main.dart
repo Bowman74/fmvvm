@@ -250,7 +250,7 @@ class _RWListView extends FmvvmStatefulWidget<_ListViewModel> {
 
 class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
   _RWListState() : super(true);
-  
+
   @override
   Widget build(BuildContext context) {
     super.build(context);

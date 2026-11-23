@@ -11,7 +11,8 @@ class ComponentResolver {
   Object? resolve(Type targetType) {
     if (!_dependencyRegistrations
         .any((r) => identical(r.typeRegistered, targetType))) {
-      throw StateError('The type $targetType is not registered with the IoC container.');
+      throw StateError(
+          'The type $targetType is not registered with the IoC container.');
     }
 
     var registration = _dependencyRegistrations

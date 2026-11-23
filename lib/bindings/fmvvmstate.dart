@@ -4,8 +4,8 @@ part of 'bindings.dart';
 ///
 /// This class must be extended whenever data binding is desired for a StatefulWidget.
 /// Intended to be used in conjunction with the FmvvmStatefulWidget class.
-abstract class FmvvmState<T extends FmvvmStatefulWidget<V>, V extends BindableBase>
-    extends State<T> implements BindableBaseHolder<V> {
+abstract class FmvvmState<T extends FmvvmStatefulWidget<V>,
+    V extends BindableBase> extends State<T> implements BindableBaseHolder<V> {
   /// Creates the FmvvmState object.
   ///
   /// [_viewModel] is the view model to be used.
@@ -14,17 +14,17 @@ abstract class FmvvmState<T extends FmvvmStatefulWidget<V>, V extends BindableBa
   FmvvmState(this._isNavigable);
 
   late V _bindableBase;
-  
+
   @override
-    void initState() {
-      super.initState();
-      
-      _bindableBase = widget.bindableBase;
-      
-      if (_bindableBase is! ViewModel && _isNavigable) {
-        throw ArgumentError("Navigable state objects must be of type ViewModel");
-      }
+  void initState() {
+    super.initState();
+
+    _bindableBase = widget.bindableBase;
+
+    if (_bindableBase is! ViewModel && _isNavigable) {
+      throw ArgumentError("Navigable state objects must be of type ViewModel");
     }
+  }
 
   /// The class's viewmodel reference.
   @override

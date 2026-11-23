@@ -60,9 +60,9 @@ class FmvvmMessageService extends MessageService {
   /// Removes all existing subscriptions.
   @override
   void clearAllSubscriptions() {
-    _messengers.forEach((m) {
+    for (var m in _messengers) {
       m.close();
-    });
+    }
 
     _subscriptions = List<Subscription>.empty(growable: true);
     _messengers = List<_Messenger>.empty(growable: true);
@@ -70,9 +70,9 @@ class FmvvmMessageService extends MessageService {
 }
 
 class _Messenger {
-  _Messenger(String name) : this.name = name {}
+  _Messenger(this.name);
 
-  StreamController _streamController = StreamController.broadcast();
+  final StreamController _streamController = StreamController.broadcast();
 
   String name;
 

@@ -5,9 +5,9 @@ part of 'bindings.dart';
 /// These are normally static references within a class that
 /// inherits from BindableBase.
 class PropertyInfo {
-  String _name;
+  final String _name;
   Object? _defaultValue;
-  Type _type;
+  final Type _type;
   int _id = -1;
 
   /// Creates a new instance of PropertyInfo.

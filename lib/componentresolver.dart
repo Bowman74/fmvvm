@@ -2,18 +2,17 @@ part of 'fmvvm.dart';
 
 /// The default fmvvm dependency injection/IoC implementation.
 class ComponentResolver {
-  ComponentResolver() {}
+  ComponentResolver();
 
   static List<_DependencyRegistration> _dependencyRegistrations =
       List<_DependencyRegistration>.empty(growable: true);
 
-  /// Resolve a type registered with the contianer specified by [targetType].
+  /// Resolve a type registered with the container specified by [targetType].
   Object? resolve(Type targetType) {
     if (!_dependencyRegistrations
         .any((r) => identical(r.typeRegistered, targetType))) {
-      throw StateError('The type ' +
-          targetType.toString() +
-          ' is not registered with the IoC container.');
+      throw StateError(
+          'The type $targetType is not registered with the IoC container.');
     }
 
     var registration = _dependencyRegistrations

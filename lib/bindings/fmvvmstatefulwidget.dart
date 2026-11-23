@@ -6,10 +6,11 @@ abstract class FmvvmStatefulWidget<V extends BindableBase>
   /// Creates the StatefulWidget.
   ///
   /// [_bindableBase] - A reference to the BindableBase to be used.
-  FmvvmStatefulWidget(this._bindableBase, {Key? key}) : super(key: key);
+  const FmvvmStatefulWidget(this._bindableBase, {Key? key}) : super(key: key);
 
   final V _bindableBase;
 
   /// The class's bindablebase reference.
+  @override
   V get bindableBase => _bindableBase;
 }

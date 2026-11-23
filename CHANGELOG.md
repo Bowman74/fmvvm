@@ -1,3 +1,17 @@
+## [0.9.12] - 11/23/2026
+
+* Breaking changes:
+
+- `BindingDirection` enum values now follow lower camel case: replace `TwoWay` with `twoWay` and `OneTime` with `oneTime`.
+- `FmvvmState` no longer accepts a bindable object in its constructor. Pass the object to the `FmvvmStatefulWidget`, call the state constructor with only the navigability flag, and access the object from the state through `bindableBase`.
+- The package now uses `material_ui` for Material widgets. Add `material_ui: ^1.11.1` to the app's dependencies and import `package:material_ui/material_ui.dart` when using Material widgets.
+
+* Other changes:
+
+- Updated `BindingWidget` to initialize binding listeners with the widget lifecycle.
+- Added optional `Key` support to `FmvvmApp`; forward it with `MyApp({Key? key}) : super(key: key)`. Added a const constructor to `BindingWidget`.
+- Updated the example app and documentation for current Flutter and Dart APIs, including the Android v2 embedding and Gradle 9.5.0 / Android Gradle Plugin 9.3.1.
+
 ## [0.9.11] - 12/20/2025.
 
 * This release adds:

@@ -3,6 +3,7 @@ part of 'fmvvm.dart';
 /// Default fmvvm implementation of the ViewLocator interface.
 class FmvvmViewLocator implements ViewLocator {
   /// returns a string view name or round name based on a viewmodel type.
+  @override
   String getViewFromViewModelType<T extends ViewModel>() {
     String typeName = Utilities.typeOf<T>().toString();
 

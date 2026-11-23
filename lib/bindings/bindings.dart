@@ -3,7 +3,7 @@ library fmvvm.bindings;
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fmvvm/interfaces/interfaces.dart' as fmvvm_interfaces;
 import 'package:fmvvm/fmvvm.dart';
 import 'dart:core';

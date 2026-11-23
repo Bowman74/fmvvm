@@ -6,7 +6,7 @@ abstract class FmvvmApp extends StatelessWidget {
   ///
   /// [registrations] are optionally passed if you would like to
   /// override the default fmvvm behavior.
-  FmvvmApp({Registrations? registrations}) {
+  FmvvmApp({Key? key, Registrations? registrations}) : super(key: key) {
     Core.initialize(registrations: registrations);
 
     registerComponents(Core.componentResolver);

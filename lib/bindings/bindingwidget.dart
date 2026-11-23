@@ -7,7 +7,8 @@ part of 'bindings.dart';
 /// All it requires is that the bindings are setup against BinableBase
 /// objects'
 class BindingWidget<T extends BindableBase> extends StatefulWidget {
-  BindingWidget({required this.bindings, required this.builder});
+  const BindingWidget({Key? key, required this.bindings, required this.builder})
+      : super(key: key);
 
   final Widget Function(BuildContext context) builder;
   final List<Binding> bindings;
@@ -34,8 +35,8 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
   Object? getValue(String key, {Object? converterParameter}) {
     Object? returnValue;
     Binding binding = _getBinding(key);
-    if (binding.bindingDirection == BindingDirection.OneTime &&
-        !(binding.originalValue is _OriginalValueNeverSet)) {
+    if (binding.bindingDirection == BindingDirection.oneTime &&
+        !(binding.originalValue is! _OriginalValueNeverSet)) {
       returnValue = binding.originalValue;
     } else if (binding.valueConverter == null) {
       returnValue = binding.source.getValue(binding.sourceProperty);
@@ -46,7 +47,7 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
     }
 
     if (binding.originalValue is _OriginalValueNeverSet &&
-        binding.bindingDirection == BindingDirection.OneTime) {
+        binding.bindingDirection == BindingDirection.oneTime) {
       binding.originalValue = returnValue;
     }
     return returnValue;
@@ -61,8 +62,8 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
   V getGenericValue<V>(String key, {Object? converterParameter}) {
     V returnValue;
     Binding binding = _getBinding(key);
-    if (binding.bindingDirection == BindingDirection.OneTime &&
-        !(binding.originalValue is _OriginalValueNeverSet)) {
+    if (binding.bindingDirection == BindingDirection.oneTime &&
+        !(binding.originalValue is! _OriginalValueNeverSet)) {
       returnValue = binding.originalValue as V;
     } else if (binding.valueConverter == null) {
       returnValue = binding.source.getGenericValue<V>(binding.sourceProperty);
@@ -73,7 +74,7 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
     }
 
     if (binding.originalValue is _OriginalValueNeverSet &&
-        binding.bindingDirection == BindingDirection.OneTime) {
+        binding.bindingDirection == BindingDirection.oneTime) {
       binding.originalValue = returnValue;
     }
     return returnValue;
@@ -116,12 +117,12 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
     }
   }
 
-  /// Returns a funcation that can be used with the OnChanged event on many StatefulWidgets.
+  /// Returns a function that can be used with the OnChanged event on many StatefulWidgets.
   ///
   /// Passes any changes made by the user back to the view model
   Function getOnChanged(String key, {Object? converterParameter}) {
     Binding binding = _getBinding(key);
-    assert(binding.bindingDirection == BindingDirection.TwoWay);
+    assert(binding.bindingDirection == BindingDirection.twoWay);
     return (Object newValue) =>
         {setValue(key, newValue, converterParameter: converterParameter)};
   }
@@ -131,21 +132,26 @@ class BindingWidget<T extends BindableBase> extends StatefulWidget {
   }
 
   @override
-  _BindingWidgetState<T> createState() => _BindingWidgetState<T>(bindings);
+  State createState() => _BindingWidgetState<T>();
 }
 
 /// A state object for use internally by fmvvm for BindingWidgets.
 class _BindingWidgetState<T> extends State<BindingWidget> {
-  final List<Binding> _sourceBindings;
+  late List<Binding> _sourceBindings;
   final List<_BindingListener> _bindingListeners =
       List<_BindingListener>.empty(growable: true);
 
-  _BindingWidgetState(this._sourceBindings) {
+  @override
+  void initState() {
+    super.initState();
+
+    _sourceBindings = widget.bindings;
+
     var addedListeners = List<BindableBase>.empty(growable: true);
 
-    _sourceBindings.forEach((b) {
+    for (var b in _sourceBindings) {
       _createListener(b, addedListeners);
-    });
+    }
   }
 
   /// Creates a property listenter for a binding.
@@ -153,15 +159,15 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
   /// If the binding is to a notification list, a listener is added to that as well.
   void _createListener(Binding binding, List<BindableBase> addedListeners) {
     if (!addedListeners.any((b) => b == binding.source)) {
-      var propertyListener = (String fieldName) {
-        if (binding.bindingDirection == BindingDirection.TwoWay &&
+      void propertyListener(String fieldName) {
+        if (binding.bindingDirection == BindingDirection.twoWay &&
             (fieldName == "" ||
                 _sourceBindings.any((b) =>
                     b.sourceProperty.name == fieldName &&
                     b.source == binding.source))) {
           setState(() {});
         }
-      };
+      }
 
       binding.source.addPropertyListener(propertyListener);
       _bindingListeners
@@ -170,9 +176,10 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
       if (binding.source.getValue(binding.sourceProperty) is NotificationList) {
         var notificationList =
             binding.source.getValue(binding.sourceProperty) as NotificationList;
-        var listListener = () {
+        void listListener() {
           setState(() {});
-        };
+        }
+
         notificationList.addListener(listListener);
         _bindingListeners
             .add(_BindingListener(true, listListener, binding.key));
@@ -193,7 +200,7 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
   @override
   @mustCallSuper
   void dispose() {
-    _bindingListeners.forEach((bl) {
+    for (var bl in _bindingListeners) {
       var binding =
           _sourceBindings.singleWhere((sb) => sb.key == bl.bindingKey);
       if (bl.isListListener) {
@@ -204,14 +211,14 @@ class _BindingWidgetState<T> extends State<BindingWidget> {
         binding.source
             .removePropertyListener(bl.listener as PropertyChangedListener);
       }
-    });
+    }
     super.dispose();
   }
 }
 
 /// A context object for use internally by fmvvm for BindingWidgets.
 class _BindingContext extends StatelessWidget {
-  _BindingContext(this.builder);
+  const _BindingContext(this.builder);
 
   final Widget Function(BuildContext context) builder;
 

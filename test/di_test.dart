@@ -7,9 +7,9 @@ void main() {
       'Single instance can be registered and retrieved from IoC container as generic',
       () {
     final simpleConstructor = _SimpleConstructor();
-    String _expectedValue = 'foo';
+    String expectedValue = 'foo';
 
-    simpleConstructor.stringTest = _expectedValue;
+    simpleConstructor.stringTest = expectedValue;
 
     var container = ComponentResolver();
     container.resetRegistrations();
@@ -19,16 +19,16 @@ void main() {
     var retrievedInstance = container.resolveType<_SimpleConstructor>();
 
     expect(retrievedInstance, isNotNull);
-    expect(retrievedInstance!.stringTest, _expectedValue);
+    expect(retrievedInstance!.stringTest, expectedValue);
   });
 
   test(
       'Single instance can be registered and retrieved from IoC container as type',
       () {
     final simpleConstructor = _SimpleConstructor();
-    String _expectedValue = 'foo';
+    String expectedValue = 'foo';
 
-    simpleConstructor.stringTest = _expectedValue;
+    simpleConstructor.stringTest = expectedValue;
 
     var container = ComponentResolver();
     container.resetRegistrations();
@@ -39,7 +39,7 @@ void main() {
         container.resolve(_SimpleConstructor) as _SimpleConstructor;
 
     expect(retrievedInstance, isNotNull);
-    expect(retrievedInstance.stringTest, _expectedValue);
+    expect(retrievedInstance.stringTest, expectedValue);
   });
 
   test(

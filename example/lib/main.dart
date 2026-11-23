@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:fmvvm/fmvvm.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends FmvvmApp {
+  MyApp({Key? key}) : super(key: key);
+
   @override
   void registerComponents(ComponentResolver componentResolver) {
     componentResolver.registerType<_HomePageViewModel>(() {
@@ -51,15 +53,15 @@ class MyApp extends FmvvmApp {
 }
 
 class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
-  _HomePageView(_HomePageViewModel viewModel, {Key? key})
+  const _HomePageView(_HomePageViewModel viewModel, {Key? key})
       : super(viewModel, key: key);
 
   @override
-  _HomePageViewState createState() => _HomePageViewState(bindableBase);
+  _HomePageViewState createState() => _HomePageViewState();
 }
 
 class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
-  _HomePageViewState(_HomePageViewModel viewModel) : super(viewModel, true);
+  _HomePageViewState() : super(true);
 
   TextEditingController? controller;
   TextEditingController? controller2;
@@ -90,7 +92,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               bindings: <Binding>[
                 Binding(
                     'counter', bindableBase, _HomePageViewModel.counterProperty,
-                    bindingDirection: BindingDirection.TwoWay,
+                    bindingDirection: BindingDirection.twoWay,
                     valueConverter: _NumberValueConverter())
               ],
               builder: (bc) => Hero(
@@ -103,7 +105,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                 bindings: <Binding>[
                   Binding('counter', bindableBase,
                       _HomePageViewModel.counterProperty,
-                      bindingDirection: BindingDirection.TwoWay,
+                      bindingDirection: BindingDirection.twoWay,
                       valueConverter: _NumberValueConverter())
                 ],
                 builder: (bc) {
@@ -122,7 +124,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                 bindings: <Binding>[
                   Binding('counter', bindableBase,
                       _HomePageViewModel.counterProperty,
-                      bindingDirection: BindingDirection.TwoWay,
+                      bindingDirection: BindingDirection.twoWay,
                       valueConverter: _NumberValueConverter())
                 ],
                 builder: (bc) {
@@ -142,7 +144,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               bindings: <Binding>[
                 Binding('testBool', bindableBase,
                     _HomePageViewModel.testBoolProperty,
-                    bindingDirection: BindingDirection.TwoWay)
+                    bindingDirection: BindingDirection.twoWay)
               ],
               builder: (c) => Switch(
                 value: BindingWidget.of<_HomePageViewModel>(c)
@@ -155,7 +157,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               bindings: <Binding>[
                 Binding('testBool', bindableBase,
                     _HomePageViewModel.testBoolProperty,
-                    bindingDirection: BindingDirection.TwoWay)
+                    bindingDirection: BindingDirection.twoWay)
               ],
               builder: (c) => Expanded(
                 child: Switch(
@@ -239,21 +241,16 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
 }
 
 class _RWListView extends FmvvmStatefulWidget<_ListViewModel> {
-  _RWListView(_ListViewModel viewModel, {Key? key})
+  const _RWListView(_ListViewModel viewModel, {Key? key})
       : super(viewModel, key: key);
 
   @override
-  _RWListState createState() => _RWListState(bindableBase);
+  _RWListState createState() => _RWListState();
 }
 
 class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
-  _RWListState(_ListViewModel viewModel) : super(viewModel, true);
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
+  _RWListState() : super(true);
+  
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -412,10 +409,12 @@ class _ListItem extends BindableBase {
 }
 
 class _NumberValueConverter implements ValueConverter {
+  @override
   Object convert(Object source, Object? value, {Object? parameter}) {
     return value.toString();
   }
 
+  @override
   Object convertBack(Object source, Object? value, {Object? parameter}) {
     return int.tryParse(value as String) ?? 0;
   }

@@ -9,7 +9,7 @@ abstract class BindableBase extends ChangeNotifier {
   ObserverList<PropertyChangedListener>? _listeners =
       ObserverList<PropertyChangedListener>();
 
-  FieldManager _fieldManager = FieldManager();
+  final FieldManager _fieldManager = FieldManager();
 
   /// Gives a new value to a property.
   @protected
@@ -117,6 +117,7 @@ abstract class BindableBase extends ChangeNotifier {
   ///
   /// This method should only be called by the object's owner.
   @mustCallSuper
+  @override
   void dispose() {
     super.dispose();
     _listeners = null;

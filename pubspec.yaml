@@ -1,6 +1,6 @@
 name: fmvvm
 description: An mvvm framework for Flutter. This is intended to easily create a formal application architecture.
-version: 0.9.11
+version: 0.9.12
 homepage: https://github.com/Bowman74/fmvvm
 
 environment:
@@ -9,11 +9,19 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
+    material_ui: ^1.11.1
 
 dev_dependencies:
     flutter_test:
         sdk: flutter
     lints: ^6.0.0
+    
+    # The "flutter_lints" package below contains a set of recommended lints to
+    # encourage good coding practices. The lint set provided by the package is
+    # activated in the `analysis_options.yaml` file located at the root of your
+    # package. See that file for information about deactivating specific lint
+    # rules and activating additional ones.
+    flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

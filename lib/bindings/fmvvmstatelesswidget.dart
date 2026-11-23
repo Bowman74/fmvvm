@@ -24,6 +24,7 @@ abstract class FmvvmStatelessWidget<V extends BindableBase>
   final bool _isNavigable;
 
   /// The class's viewmodel reference.
+  @override
   V get bindableBase => _bindableBase;
 
   /// Builds the presentaiton for the widget.

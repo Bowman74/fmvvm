@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CMakeProjectFlavorService">
+    <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
+  <component name="CMakeSettings">
+    <configurations />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="aac08567-58cb-43f8-9aa4-cc52b3b3b3e2" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_/Users/kevinford/Source/fmvvm" value="3MWfC1RwqHDSkIYd8Eyx9LVxAO9" />
+    </persistenceIdMap>
+  </component>
   <component name="FileEditorManager">
     <leaf>
       <file leaf-file-name="main.dart" pinned="false" current-in-tab="true">
@@ -13,24 +34,114 @@
       </file>
     </leaf>
   </component>
-  <component name="ToolWindowManager">
-    <editor active="true" />
-    <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-    </layout>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.000000000193145" />
+      <entry key="S5" value="1.0001943914025113" />
+      <entry key="S10" value="1.02350895213701" />
+      <entry key="S30" value="1.6748029194126142" />
+      <entry key="S60" value="2.6625631285863562" />
+      <entry key="M2" value="4.13885942660589" />
+      <entry key="M5" value="8.515545881578834" />
+      <entry key="M10" value="14.54726057732869" />
+      <entry key="M15" value="20.985226919752243" />
+      <entry key="M30" value="40.399863214949974" />
+      <entry key="H1" value="64.84386647120431" />
+      <entry key="H2" value="85.09673589221586" />
+      <entry key="H4" value="98.25673333672653" />
+      <entry key="D1" value="111.17543367272503" />
+      <entry key="W1" value="113.59127118912762" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="7.41605701419146E-130" />
+      <entry key="MS500" value="1.492913385653638E-26" />
+      <entry key="S2" value="3.495613872849896E-7" />
+      <entry key="S5" value="0.0026761569372897066" />
+      <entry key="S10" value="0.06346587672157598" />
+      <entry key="S30" value="0.8382059233899425" />
+      <entry key="S60" value="1.7882221251224584" />
+      <entry key="M2" value="2.660645608519297" />
+      <entry key="M5" value="3.5819094946721184" />
+      <entry key="M10" value="4.890585844772264" />
+      <entry key="M15" value="6.240245109244153" />
+      <entry key="M30" value="9.36805936604062" />
+      <entry key="H1" value="12.531985697837184" />
+      <entry key="H2" value="14.880432596881604" />
+      <entry key="H4" value="16.32763909070077" />
+      <entry key="D1" value="17.70402048598564" />
+      <entry key="W1" value="17.957271729815503" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="0.012958117903350655" />
+      <entry key="MS500" value="0.4192840922204656" />
+      <entry key="S2" value="0.8046873026997182" />
+      <entry key="S5" value="0.9184915309367047" />
+      <entry key="S10" value="1.0280065269991785" />
+      <entry key="S30" value="2.4213684742647548" />
+      <entry key="S60" value="4.361446369001203" />
+      <entry key="M2" value="6.732081052162123" />
+      <entry key="M5" value="12.05477049018783" />
+      <entry key="M10" value="19.407751339615036" />
+      <entry key="M15" value="27.201085605159676" />
+      <entry key="M30" value="49.75144192685805" />
+      <entry key="H1" value="77.36556821775899" />
+      <entry key="H2" value="99.97127657481961" />
+      <entry key="H4" value="114.58119565561105" />
+      <entry key="D1" value="128.87888808226768" />
+      <entry key="W1" value="131.54846108771036" />
+    </decayedShown>
+  </component>
+  <component name="ProjectSessionTemplates">
+    <option name="panelTemplate">
+      <template>
+        <option name="ensembleEnabled" value="true" />
+        <option name="modeId" value="Agent" />
+        <option name="model">
+          <model>
+            <option name="modelType" value="builtin_id" />
+            <option name="modelValue" value="ensemble" />
+          </model>
+        </option>
+        <option name="targetType" value="BACKGROUND" />
+        <option name="worktreeMode" value="WORKSPACE" />
+      </template>
+    </option>
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
-    </navigator>
+    <navigator currentView="ProjectPane" proportions="" version="1" />
     <panes>
       <pane id="ProjectPane">
         <option name="show-excluded-files" value="false" />
       </pane>
     </panes>
   </component>
-  <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="dart.analysis.tool.window.force.activate" value="true" />
-    <property name="show.migrate.to.gradle.popup" value="false" />
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Flutter.Debug.executor": "Debug",
+    "dart.analysis.tool.window.visible": "false",
+    "io.flutter.reload.alreadyRun": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="Debug" type="FlutterRunConfigurationType" factoryName="Flutter">
+      <option name="filePath" value="$PROJECT_DIR$/example/lib/main.dart" />
+      <method v="2" />
+    </configuration>
   </component>
+  <component name="TaskManager">
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <editor active="true" />
+    <layout>
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+    </layout>
+  </component>
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
 </project>

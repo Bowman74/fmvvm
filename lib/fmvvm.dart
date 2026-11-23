@@ -2,7 +2,7 @@ library fmvvm;
 
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fmvvm/bindings/bindings.dart';
 import 'package:fmvvm/interfaces/interfaces.dart';

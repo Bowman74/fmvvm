@@ -4,13 +4,12 @@ part of 'bindings.dart';
 ///
 /// This item is usually created within a FmvvmState object.
 class Binding {
-  Binding(String key, BindableBase source, PropertyInfo sourceProperty,
+  Binding(String key, this.source, PropertyInfo sourceProperty,
       {BindingDirection? bindingDirection,
       fmvvm_interfaces.ValueConverter? valueConverter})
       : _key = key,
-        this.source = source,
         _sourceProperty = sourceProperty,
-        _bindingDirection = bindingDirection ?? BindingDirection.TwoWay {
+        _bindingDirection = bindingDirection ?? BindingDirection.twoWay {
     _valueConverter = valueConverter;
   }
 
@@ -44,4 +43,4 @@ class Binding {
 class _OriginalValueNeverSet {}
 
 /// What type of binding to create.
-enum BindingDirection { TwoWay, OneTime }
+enum BindingDirection { twoWay, oneTime }

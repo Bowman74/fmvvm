@@ -27,15 +27,22 @@ Implementing the MVVM pattern is about having a formal architecture in our appli
 
 Bootstrapping fmvvm is pretty easy. To get a reference to fmvvm add the following line to the dependencies section of the pubspec.yaml file:
 
-```
-fmvvm: ^0.9.11
+```yaml
+dependencies:
+  fmvvm: ^0.9.12
+  material_ui: ^1.11.1
 ```
 
 If we need to reference fmvvm components in code, we can use the following import:
 
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:fmvvm/fmvvm.dart';
 ```
-import 'package:fmvvm/bindings/fmvvm.dart';
-```
+
+### Migrating to 0.9.12
+
+Version 0.9.12 includes breaking API changes. Update `BindingDirection.TwoWay` and `BindingDirection.OneTime` to `BindingDirection.twoWay` and `BindingDirection.oneTime`. `FmvvmState` now takes only the navigability flag; pass the bindable object to the `FmvvmStatefulWidget` and access it from the state through `bindableBase`. See the [changelog](CHANGELOG.md) for details.
 
 The easiest way to start fmvvm is to extend the fmvvmapp. There are a few things we need to override:
 
@@ -46,6 +53,8 @@ The easiest way to start fmvvm is to extend the fmvvmapp. There are a few things
 
 ```dart
 class MyApp extends FmvvmApp {
+  MyApp({Key? key}) : super(key: key);
+
   @override
   void registerComponents(ComponentResolver componentResolver) {
     componentResolver.registerType<_HomePageViewModel>(() {
@@ -95,10 +104,10 @@ If we want a custom versions of the ComponentResolver, ViewLocator or Navigation
 
 ## Viewmodels
 
-Viewmodels are the primary glue that backs a widget. Viewmodels should inherit from ViewModelBase.
+Viewmodels are the primary glue that backs a widget. Viewmodels should inherit from `ViewModel`.
 
 ```dart
-import 'package:fmvvm/bindings/fmvvm.dart';
+import 'package:fmvvm/fmvvm.dart';
 
 class SampleViewModel extends ViewModel {
 }
@@ -106,7 +115,7 @@ class SampleViewModel extends ViewModel {
 
 ### Adding properties
 
-Properties that can be bound to should use the PropertyInfo object. Any object that inherits from BindableBase, including ViewModelBase, can create bindable properties.
+Properties that can be bound to should use the `PropertyInfo` object. Any object that inherits from `BindableBase`, including `ViewModel`, can create bindable properties.
 
 Creating a new PropertyInfo object should:
 
@@ -139,11 +148,11 @@ Read only or set only properties can be created by leaving off the setter or get
 
 ### Adding commands
 
-Commands allow widgets to call functions on viewmodels in a generic way and also allow parameters to be passed to those functions. Commands are usually private to the class and exposed through a property getter.
+Commands allow widgets to call functions on viewmodels in a generic way. The function passed to a `Command` and its `execute` method cannot take parameters. Commands are usually private to the class and exposed through a property getter.
 
 Currently commands are fire and forget, that is to say they do not return a future.
 
-Here is how a command can be created on a viewmodel that takes no parameters.
+Here is how to create a command:
 
 ```dart
 Command? _doSomethingCommand;
@@ -156,18 +165,7 @@ Command get DoSomething {
 }
 ```
 
-A command that takes a parameter would be defined as:
-
-```dart
-Command? _doSomethingCommand;
-
-Command get DoSomething {
-  _doSomethingCommand ??= Command((parameter) {
-    // Some code that should be run in the viewModel
-  });
-  return _doSomethingCommand;
-}
-```
+If an operation needs a value, store it on the viewmodel before executing the command, or capture a value in the parameterless function passed to `Command`.
 
 ### The init function.
 
@@ -270,7 +268,7 @@ Creating a stateless widget should look like this:
 
 ```dart
 class MyStatelessWidget extends FmvvmStatelessWidget<SomeViewModel> {
-  MyStatelessWidget(ViewModel viewModel, {Key key})
+  MyStatelessWidget(SomeViewModel viewModel, {Key? key})
       : super(viewModel, true, key: key);
 }
 ```
@@ -318,27 +316,29 @@ Stateful widget should inherit from FmvvmStatefulWidget.
 
 ```dart
 class MyStatefulWidget extends FmvvmStatefulWidget<MyViewModel> {
-  MyStatefulWidget(MyViewModel viewModel, {Key key, this.title})
+  const MyStatefulWidget(MyViewModel viewModel, {Key? key})
       : super(viewModel, key: key);
 }
 ```
 
-Classes that inherit from FmvvmStatefulWidget should always use a State object that inherits from FmvvmState and pass class that derives from BindableBase to the state object.
+Classes that inherit from FmvvmStatefulWidget should use a State object that inherits from FmvvmState. The bindable object is supplied to the state through the widget.
 
 ```dart
 @override
-MyState createState() => MyState(viewModel);
+MyState createState() => MyState();
 ```
 
 To create the State object we simply extend from FmvvmState.
 
 ```dart
 class MyState extends FmvvmState<MyStatefulWidget, MyViewModel> {
-  MyState(MyViewModel viewModel) : super(viewModel, true);
+  MyState() : super(true);
 }
 ```
 
-Like the FmvvmStatelessWidget, the second parameter sent to the super class defines if this widget is navigable (like a page) or not (like a widget in a page). Pass true if it is navigable.
+Like the `isNavigable` argument for `FmvvmStatelessWidget`, the argument passed to `super` defines whether this widget is navigable (like a page) or part of a page (like a row in a list). Pass `true` if it is navigable.
+
+The state can access the widget's bindable object through `bindableBase`; it does not need to be passed again to the state constructor.
 
 ## Data binding
 
@@ -352,7 +352,7 @@ A single BindingWidget can contain one or more bindings. Consider the following 
 
 ```dart
 BindingWidget<_HomePageViewModel>(
-  bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay)],
+  bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.twoWay)],
   builder: (bc) => Hero(
     tag: 'countHero',
     child: Text('More on this in a bit'),
@@ -376,7 +376,7 @@ We saw how to setup a binding widget, but how do we get information from it. For
 
 ```dart
 BindingWidget<_HomePageViewModel>(
-  bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay, valueConverter: _NumberValueConverter())],
+  bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.twoWay, valueConverter: _NumberValueConverter())],
   builder: (bc) => Hero(
     tag: 'countHero',
     child: Text(BindingWidget.of<_HomePageViewModel>(bc).getGenericValue<String>('counter')),
@@ -394,7 +394,7 @@ That handles getting value changes from the viewmodel to the widget, how about v
 
 ```dart
 BindingWidget<_HomePageViewModel>(
-  bindings: <Binding>[Binding('testBool', bindableBase, _HomePageViewModel.testBoolProperty, bindingDirection: BindingDirection.TwoWay)],
+  bindings: <Binding>[Binding('testBool', bindableBase, _HomePageViewModel.testBoolProperty, bindingDirection: BindingDirection.twoWay)],
   builder: (c) => Switch(
     value: BindingWidget.of<_HomePageViewModel>(c).getGenericValue<bool>('testBool'),
     onChanged: BindingWidget.of<_HomePageViewModel>(c).getOnChanged('testBool') as void Function(String),
@@ -427,7 +427,7 @@ Then in the build method we can use our BindingWidget:
 
 ```dart
 BindingWidget<_HomePageViewModel>(
-  bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay, valueConverter: _NumberValueConverter())],
+  bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.twoWay, valueConverter: _NumberValueConverter())],
   builder: (bc) {
     controller.text = BindingWidget.of<_HomePageViewModel>(bc).getGenericValue<String>('counter');
     return TextField(
@@ -455,15 +455,7 @@ floatingActionButton: FloatingActionButton(
 )
 ```
 
-Commands can also take parameters. Here is an example using a FlatButton widget.
-
-```dart
-FlatButton(
-  child: Text('Navigate'),
-  onPressed: () => {viewModel.navigate.execute(BindingWidget.of<_SomeViewModel>(bc).getGenericValue<String>('someBindingName'));})
-```
-
-In this case the value from a binding would be passed as a parameter to the command.
+Calling `execute()` does not accept parameters. If a command needs a value, make that value available to the viewmodel before executing it.
 
 ### Value conversion
 
@@ -491,7 +483,7 @@ Value converters are sent to bindings when they are created and used automatical
 
 ```dart
 BindingWidget<_HomePageViewModel>(
-  bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.TwoWay, valueConverter: _NumberValueConverter())],
+  bindings: <Binding>[Binding('counter', bindableBase, _HomePageViewModel.counterProperty, bindingDirection: BindingDirection.twoWay, valueConverter: _NumberValueConverter())],
   builder: (bc) => Hero(
     tag: 'countHero',
     child: ...child widgets...
@@ -808,13 +800,15 @@ _messageService.subscribe(subscription);
 Here is a sample app that puts together the concepts we have discussed.
 
 ```dart
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:fmvvm/fmvvm.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends FmvvmApp {
+  MyApp({Key? key}) : super(key: key);
+
   @override
   void registerComponents(ComponentResolver componentResolver) {
     componentResolver.registerType<_HomePageViewModel>(() {
@@ -858,16 +852,16 @@ class MyApp extends FmvvmApp {
 }
 
 class _HomePageView extends FmvvmStatefulWidget<_HomePageViewModel> {
-  _HomePageView(_HomePageViewModel viewModel, {Key? key})
+  const _HomePageView(_HomePageViewModel viewModel, {Key? key})
       : super(viewModel, key: key);
 
 
   @override
-  _HomePageViewState createState() => _HomePageViewState(bindableBase);
+  _HomePageViewState createState() => _HomePageViewState();
 }
 
 class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
-  _HomePageViewState(_HomePageViewModel viewModel) : super(viewModel, true);
+  _HomePageViewState() : super(true);
 
   TextEditingController? controller;
   TextEditingController? controller2;
@@ -898,7 +892,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               bindings: <Binding>[
                 Binding(
                     'counter', bindableBase, _HomePageViewModel.counterProperty,
-                    bindingDirection: BindingDirection.TwoWay,
+                    bindingDirection: BindingDirection.twoWay,
                     valueConverter: _NumberValueConverter())
               ],
               builder: (bc) => Hero(
@@ -911,7 +905,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                 bindings: <Binding>[
                   Binding('counter', bindableBase,
                       _HomePageViewModel.counterProperty,
-                      bindingDirection: BindingDirection.TwoWay,
+                      bindingDirection: BindingDirection.twoWay,
                       valueConverter: _NumberValueConverter())
                 ],
                 builder: (bc) {
@@ -930,7 +924,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
                 bindings: <Binding>[
                   Binding('counter', bindableBase,
                       _HomePageViewModel.counterProperty,
-                      bindingDirection: BindingDirection.TwoWay,
+                      bindingDirection: BindingDirection.twoWay,
                       valueConverter: _NumberValueConverter())
                 ],
                 builder: (bc) {
@@ -950,7 +944,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               bindings: <Binding>[
                 Binding('testBool', bindableBase,
                     _HomePageViewModel.testBoolProperty,
-                    bindingDirection: BindingDirection.TwoWay)
+                    bindingDirection: BindingDirection.twoWay)
               ],
               builder: (c) => Switch(
                     value: BindingWidget.of<_HomePageViewModel>(c)
@@ -963,7 +957,7 @@ class _HomePageViewState extends FmvvmState<_HomePageView, _HomePageViewModel> {
               bindings: <Binding>[
                 Binding('testBool', bindableBase,
                     _HomePageViewModel.testBoolProperty,
-                    bindingDirection: BindingDirection.TwoWay)
+                    bindingDirection: BindingDirection.twoWay)
               ],
               builder: (c) => Expanded(
                     child: Switch(
@@ -1047,15 +1041,15 @@ class _CounterView extends FmvvmStatelessWidget<_CounterViewModel> {
 }
 
 class _RWListView extends FmvvmStatefulWidget<_ListViewModel> {
-  _RWListView(_ListViewModel viewModel, {Key? key})
+  const _RWListView(_ListViewModel viewModel, {Key? key})
       : super(viewModel, key: key);
 
   @override
-  _RWListState createState() => _RWListState(bindableBase);
+  _RWListState createState() => _RWListState();
 }
 
 class _RWListState extends FmvvmState<_RWListView, _ListViewModel> {
-  _RWListState(_ListViewModel viewModel) : super(viewModel, true);
+  _RWListState() : super(true);
 
   @override
   void initState() {

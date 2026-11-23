@@ -1,11 +1,12 @@
 // This is a generated file; do not edit or check into version control.
 FLUTTER_ROOT=/Users/kevinford/flutter
 FLUTTER_APPLICATION_PATH=/Users/kevinford/Source/fmvvm
+FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/Users/kevinford/Source/fmvvm/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_TARGET=lib/main.dart
 FLUTTER_BUILD_DIR=build
-FLUTTER_BUILD_NAME=0.9.8
-FLUTTER_BUILD_NUMBER=0.9.8
+FLUTTER_BUILD_NAME=0.9.11
+FLUTTER_BUILD_NUMBER=0.9.11
 EXCLUDED_ARCHS[sdk=iphonesimulator*]=i386
 EXCLUDED_ARCHS[sdk=iphoneos*]=armv7
 DART_OBFUSCATION=false

@@ -9,73 +9,77 @@ class FmvvmNavigationService implements NavigationService {
   ///
   /// The [parameter] is a value that will be passed to the new viewmodel's
   /// init method.
+  @override
   Future navigate<V extends ViewModel>({Object? parameter}) async {
     ArgumentError.checkNotNull(_viewContext, '_viewContext');
 
-    var _viewModel = createViewModel<V>(parameter);
+    var viewModel = createViewModel<V>(parameter);
 
     var routeName = Core._viewLocator!.getViewFromViewModelType<V>();
     var context = _viewContext;
 
     await Navigator.of(_viewContext!)
-        .pushNamed(routeName, arguments: _viewModel)
+        .pushNamed(routeName, arguments: viewModel)
         .whenComplete(() {
       Core.componentResolver
           .resolveType<MessageService>()!
           .publish(Message(Constants.newBuildContext, context as Object));
     });
 
-    _viewModel.dispose();
+    viewModel.dispose();
   }
 
   /// Navigates to a new viewmodel of the type specified by the generic.
   ///
   /// The [parameter] is a value that will be passed to the new viewmodel's
-  /// init method. It is expexted that the ViewModel being navigated to will
+  /// init method. It is expected that the ViewModel being navigated to will
   /// return an instance of type R when it is popped off the stack.
+  @override
   Future<R?> navigateForResult<R extends Object, V extends ViewModel>(
       {Object? parameter}) async {
     ArgumentError.checkNotNull(_viewContext, '_viewContext');
-    var _viewModel = createViewModel<V>(parameter);
+    var viewModel = createViewModel<V>(parameter);
 
     var routeName = Core._viewLocator!.getViewFromViewModelType<V>();
     var context = _viewContext;
 
     var returnValue = await Navigator.of(_viewContext!)
-        .pushNamed<R>(routeName, arguments: _viewModel)
+        .pushNamed<R>(routeName, arguments: viewModel)
         .whenComplete(() {
       Core.componentResolver
           .resolveType<MessageService>()!
           .publish(Message(Constants.newBuildContext, context as Object));
     });
 
-    _viewModel.dispose();
+    viewModel.dispose();
 
     return returnValue;
   }
 
-  /// Navigates to a new view modeland removed the calling viewmodel from the stack.
+  /// Navigates to a new view model and removes the calling viewmodel from the stack.
   ///
   /// The [parameter] is a value that will be passed to the new viewmodel's
   /// init method. The Future will be resolved with the ViewModel that is navigated to is
   /// popped from the stack.
+  @override
   void navigateAndRemoveCurrent<V extends ViewModel>(
       {Object? parameter}) async {
     ArgumentError.checkNotNull(_viewContext, '_viewContext');
-    var _viewModel = createViewModel<V>(parameter);
+    var viewModel = createViewModel<V>(parameter);
 
     var routeName = Core._viewLocator!.getViewFromViewModelType<V>();
 
     await Navigator.of(_viewContext!)
-        .popAndPushNamed(routeName, arguments: _viewModel);
+        .popAndPushNamed(routeName, arguments: viewModel);
 
-    _viewModel.dispose();
+    viewModel.dispose();
   }
 
-  /// Any initiliazation needed to be done by the messenger service.
+  /// Any initialization needed to be done by the messenger service.
   ///
   /// This is called once when fmvvm is initialized. fmvvm uses a single
-  /// instance of the navigaiton service throughout the app.
+  /// instance of the navigation service throughout the app.
+  @override
   void initialize() {
     var messageService =
         Core.componentResolver.resolveType<MessageService>() as MessageService;
@@ -88,12 +92,14 @@ class FmvvmNavigationService implements NavigationService {
   }
 
   /// Pops the current view / viewmodel off the stack and goes to the previous one.
+  @override
   void navigateBack() {
     ArgumentError.checkNotNull(_viewContext, '_viewContext');
     Navigator.of(_viewContext!).pop();
   }
 
   /// Pops the current view / viewmodel off the stack and goes to the previous one.
+  @override
   void navigateBackWithResult<R extends Object>([R? parameter]) {
     ArgumentError.checkNotNull(_viewContext, '_viewContext');
     Navigator.of(_viewContext!).pop(parameter);
@@ -103,11 +109,12 @@ class FmvvmNavigationService implements NavigationService {
   ///
   /// The [parameter] is a value that will be passed to the new viewmodel's
   /// init method.
-  /// This method is usefule for creating a view model to pass to an apps
+  /// This method is useful for creating a view model to pass to an app's
   /// starting widget.
+  @override
   ViewModel createViewModel<T extends ViewModel>(Object? parameter) {
-    ViewModel _viewModel = Core.componentResolver.resolveType<T>() as ViewModel;
-    _viewModel.init(parameter);
-    return _viewModel;
+    ViewModel viewModel = Core.componentResolver.resolveType<T>() as ViewModel;
+    viewModel.init(parameter);
+    return viewModel;
   }
 }

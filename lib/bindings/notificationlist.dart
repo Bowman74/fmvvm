@@ -8,39 +8,48 @@ class NotificationList<E> extends ListBase<E> with ChangeNotifier {
 
   NotificationList();
 
+  @override
   set length(int newLength) {
     _l.length = newLength;
   }
 
+  @override
   int get length => _l.length;
 
+  @override
   E operator [](int index) => _l[index];
+  @override
   void operator []=(int index, E value) {
     _l[index] = value;
   }
 
+  @override
   void add(E element) {
     _l.add(element);
     notifyListeners();
   }
 
+  @override
   void addAll(Iterable<E> iterable) {
     super.addAll(iterable);
     notifyListeners();
   }
 
+  @override
   bool remove(Object? element) {
     var returnValue = super.remove(element);
     notifyListeners();
     return returnValue;
   }
 
-  void removeWhere(bool test(E element)) {
+  @override
+  void removeWhere(bool Function(E element) test) {
     super.removeWhere(test);
     notifyListeners();
   }
 
-  void retainWhere(bool test(E element)) {
+  @override
+  void retainWhere(bool Function(E element) test) {
     super.retainWhere(test);
     notifyListeners();
   }
@@ -62,7 +71,7 @@ class NotificationList<E> extends ListBase<E> with ChangeNotifier {
   factory NotificationList.of(Iterable<E> elements, {bool growable = true}) =>
       NotificationList<E>.from(elements, growable: growable);
 
-  factory NotificationList.generate(int length, E generator(int index),
+  factory NotificationList.generate(int length, E Function(int index) generator,
       {bool growable = true}) {
     var returnValue = NotificationList<E>();
 

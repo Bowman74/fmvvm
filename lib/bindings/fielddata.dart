@@ -8,7 +8,7 @@ class FieldData<T> {
   FieldData(String name, int id, T? startingValue)
       : _name = name,
         _id = id,
-        value = startingValue {}
+        value = startingValue;
 
   /// The name of the property.
   String get name => _name;

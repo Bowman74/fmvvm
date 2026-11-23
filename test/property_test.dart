@@ -6,10 +6,10 @@ import 'package:fmvvm/bindings/bindings.dart';
 void main() {
   test('ensures a property is set correctly', () {
     final testViewModel = _TestViewModel();
-    String _expectedValue = 'foo';
+    String expectedValue = 'foo';
 
-    testViewModel.stringTest = _expectedValue;
-    expect(testViewModel.stringTest, _expectedValue);
+    testViewModel.stringTest = expectedValue;
+    expect(testViewModel.stringTest, expectedValue);
   });
 
   test('ensures property listener called correctly', () {
@@ -21,13 +21,13 @@ void main() {
       t!.cancel();
     }));
 
-    String _expectedValue = 'foo';
+    String expectedValue = 'foo';
 
     t = Timer(Duration(seconds: 3), () {
       fail('event not fired in time');
     });
 
-    testViewModel.stringTest = _expectedValue;
+    testViewModel.stringTest = expectedValue;
   });
 
   test('ensures normal listener called correctly', () {
@@ -38,13 +38,13 @@ void main() {
       t!.cancel();
     }));
 
-    String _expectedValue = 'foo';
+    String expectedValue = 'foo';
 
     t = Timer(Duration(seconds: 3), () {
       fail('event not fired in time');
     });
 
-    testViewModel.stringTest = _expectedValue;
+    testViewModel.stringTest = expectedValue;
   });
 
   test('string property has correct default value', () {
